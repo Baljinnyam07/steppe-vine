@@ -1,0 +1,5 @@
+Stone textures (all CC0, public domain):
+- travertine_*: built from ambientCG "Tiles143" (https://ambientcg.com/a/Tiles143)
+- plain_*: built from ambientCG "Tiles139" (https://ambientcg.com/a/Tiles139)
+- sandstone_*: Poly Haven "Sandstone Cracks" (https://polyhaven.com/a/sandstone_cracks)
+travertine/plain were rebuilt without grout lines by compositing tile interiors.
