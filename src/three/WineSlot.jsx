@@ -1,73 +1,90 @@
-import { forwardRef, useMemo, useRef } from 'react'
+import { forwardRef, useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { MathUtils } from 'three'
 import { StoneBlock } from './Plinth'
 import Bottle from './Bottle'
-import WineGlass, { GLASS_X } from './WineGlass'
 import { anim } from './anim'
+import { useStore } from '../store'
 import { getBlobTexture, getSoftRectTexture } from './textures'
 
-const { lerp } = MathUtils
-const PIVOT_Y = 1.5 // bottle centre above the pedestal top when standing
-const DETAIL_H = 0.55 // pedestal height of the selected bottle in the detail view
-
-// The pivot at the bottle's centre makes the pour a simple rotation.
-// Final pour pose puts the lip exactly above the glass (see WineGlass GLASS_X / POUR_TIP_Y).
-const POUR_ANGLE = -2.0
-const POUR_DX = 1.04
-const LIFT = 1.3
-const TILT_DROP = 0.22
 
 /**
- * One pedestal + bottle (+ glass in the detail view).
+ * One pedestal + bottle. In the detail view the selected slot glides to the left half and its
+ * pedestal stays as it is; the bottle just stands there (no glass, no pouring).
  *
  * To use a GLTF instead of the procedural bottle, replace <Bottle/> with a component that
  * does `const { scene } = useGLTF('/bottle.glb')` and returns <primitive object={scene.clone()}/>
- * (origin at the base, ~3 units tall so the pour maths still lines up).
+ * (origin at the base, ~3 units tall).
  */
 const WineSlot = forwardRef(function WineSlot({ wine, place, selected, onOver, onOut, onSelect }, ref) {
   const { h, stone } = place
   const stoneRef = useRef()
-  const slab = useRef()
   const content = useRef()
-  const pivot = useRef()
   const groundShadow = useRef()
   const contact = useRef()
+  const spin = useRef()
+  const rot = useRef({ y: 0, vel: 0, drag: false, x: 0 })
   const blobMap = useMemo(getBlobTexture, [])
+  // the dark contact patch under the bottle must stay on the stone's top face (it used to overhang its back / side edges)
+  const blobSize = Math.max(0.5, Math.min(1.25, stone.w - 2 * Math.abs(stone.dx) - 0.12, stone.d - 0.16))
+
+  // detail view: drag sideways to turn the bottle around (with a little momentum)
+  useEffect(() => {
+    if (!selected) return
+    const r = rot.current
+    const ready = () => useStore.getState().view === 'detail' && anim.detail > 0.9
+    const down = (e) => {
+      if (!ready() || e.target.tagName !== 'CANVAS') return
+      r.drag = true; r.x = e.clientX; r.vel = 0
+      document.body.style.cursor = 'grabbing'
+    }
+    const move = (e) => {
+      if (!r.drag) return
+      const dx = e.clientX - r.x
+      r.x = e.clientX
+      r.y += dx * 0.012
+      r.vel = dx * 0.012
+    }
+    const up = () => { r.drag = false; if (ready()) document.body.style.cursor = 'grab' }
+    const hover = (e) => {
+      if (r.drag) return
+      document.body.style.cursor = ready() && e.target.tagName === 'CANVAS' ? 'grab' : ''
+    }
+    window.addEventListener('pointerdown', down)
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointermove', hover)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
+    return () => {
+      window.removeEventListener('pointerdown', down)
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointermove', hover)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+      r.drag = false
+      document.body.style.cursor = ''
+    }
+  }, [selected])
   const rectMap = useMemo(getSoftRectTexture, [])
 
-  useFrame(() => {
-    const d = selected ? anim.detail : 0
-    const eff = lerp(h, DETAIL_H, d)
-
-    // pedestal shrinks/narrows while the selected bottle moves into the detail layout
-    stoneRef.current.scale.set(lerp(1, 1.6 / stone.w, d), eff / h, lerp(1, 1.5 / stone.d, d))
-    stoneRef.current.position.set(stone.dx * (1 - d), eff / 2, 0)
-    content.current.position.y = eff
-
-    // soft shadow the block leaves on whatever it stands on, follows the pedestal's scale
-    groundShadow.current.scale.set(stoneRef.current.scale.x, 1, stoneRef.current.scale.z)
-    groundShadow.current.position.x = stone.dx * (1 - d)
-    // dark patch under the bottle; fades while the bottle is lifted off for the pour
-    contact.current.material.opacity = 0.5 * (1 - (selected ? anim.lift : 0))
-
-    const g = selected ? anim.glass : 0
-    slab.current.visible = g > 0.001
-    slab.current.scale.set(Math.max(g, 0.0001), eff / h, Math.max(g, 0.0001))
-    slab.current.position.y = eff / 2
-
-    // pour pose in the detail view
-    if (!selected) {
-      pivot.current.position.set(0, PIVOT_Y, -0.05)
-      pivot.current.rotation.z = 0
-      return
+  useFrame((_, dt) => {
+    const r = rot.current
+    if (!r.drag) {
+      r.y += r.vel; r.vel *= Math.pow(0.02, dt)
+      // when the bottle is put back on the shelf it turns to face front again
+      if (!selected || anim.detail < 0.5) {
+        const TAU = Math.PI * 2
+        const target = Math.round(r.y / TAU) * TAU
+        r.y += (target - r.y) * Math.min(1, dt * 4)
+        r.vel = 0
+      }
     }
-    pivot.current.position.set(
-      POUR_DX * anim.tilt,
-      PIVOT_Y + LIFT * anim.lift - TILT_DROP * anim.tilt,
-      -0.05
-    )
-    pivot.current.rotation.z = POUR_ANGLE * anim.tilt
+    spin.current.rotation.y = r.y
+
+    // the pedestal keeps its size; only its offset under the bottle eases to centre in the detail view
+    const d = selected ? anim.detail : 0
+    stoneRef.current.position.x = stone.dx * (1 - d)
+    groundShadow.current.position.x = stone.dx * (1 - d)
+    contact.current.material.opacity = 0.5
   })
 
   return (
@@ -82,18 +99,16 @@ const WineSlot = forwardRef(function WineSlot({ wine, place, selected, onOver, o
         <meshBasicMaterial map={rectMap} color="#3a2410" transparent opacity={0.5} depthWrite={false} polygonOffset polygonOffsetFactor={-2} />
       </mesh>
       <StoneBlock ref={stoneRef} width={stone.w} height={h} depth={stone.d} tint={stone.tint} seed={stone.seed} kind={stone.kind} position={[stone.dx, h / 2, 0]} />
-      <StoneBlock ref={slab} width={1.2} height={h} depth={1.2} tint={stone.tint} seed={stone.seed + 3} kind={stone.kind} position={[GLASS_X, h / 2, 0.15]} visible={false} />
       <group ref={content} position={[0, h, 0]}>
         <mesh ref={contact} rotation-x={-Math.PI / 2} position={[0, 0.006, -0.05]} renderOrder={2}>
-          <planeGeometry args={[1.25, 1.25]} />
+          <planeGeometry args={[blobSize, blobSize]} />
           <meshBasicMaterial map={blobMap} color="#2a1608" transparent opacity={0.5} depthWrite={false} polygonOffset polygonOffsetFactor={-3} />
         </mesh>
-        <group ref={pivot} position={[0, PIVOT_Y, -0.05]}>
-          <group position={[0, -1.5, 0]}>
+        <group position={[0, 0, -0.05]}>
+          <group ref={spin}>
             <Bottle wine={wine} />
           </group>
         </group>
-        <WineGlass wine={wine} active={selected} />
       </group>
     </group>
   )

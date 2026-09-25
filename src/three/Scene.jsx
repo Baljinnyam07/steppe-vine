@@ -4,6 +4,7 @@ import { Environment, Lightformer, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { useStore } from '../store'
 import { anim, playDetail } from './anim'
+import { receiveCaustics, renderCaustics } from './causticShare'
 import { getWallTexture, getGrainBump } from './textures'
 import Showcase from './Showcase'
 
@@ -49,7 +50,7 @@ function Floor() {
   return (
     <mesh rotation-x={-Math.PI / 2} receiveShadow>
       <planeGeometry args={[60, 30]} />
-      <meshStandardMaterial map={map} normalMap={normalMap} normalScale={normalScale} roughnessMap={roughnessMap} color="#f0e2cf" roughness={1} metalness={0} />
+      <meshStandardMaterial map={map} normalMap={normalMap} normalScale={normalScale} roughnessMap={roughnessMap} color="#f0e2cf" roughness={1} metalness={0} onBeforeCompile={receiveCaustics} customProgramCacheKey={() => 'caustic-recv'} />
     </mesh>
   )
 }
@@ -65,15 +66,26 @@ function CameraRig() {
   useFrame((state, dt) => {
     const { camera, pointer } = state
     base.x = damp(base.x, pointer.x * 0.35, 4, dt)
-    base.y = damp(base.y, WIDE.pos.y + pointer.y * 0.2, 4, dt)
+    // portrait: camera level with the scene so the floor sits low and the bottles get the height
+    const portrait = state.size.width < 820
+    base.y = damp(base.y, (portrait ? 1.8 : WIDE.pos.y) + pointer.y * 0.2, 4, dt)
     base.z = lerp(WIDE.pos.z, DETAIL_Z, anim.detail)
 
     const f = anim.focus
     const z = anim.zoom
     goal.set(f.x, f.y + 0.2, f.z + 5.2) // close-up position in front of the bottle
     camera.position.set(lerp(base.x, goal.x, z), lerp(base.y, goal.y, z), lerp(base.z, goal.z, z))
-    look.set(lerp(WIDE.look.x, f.x, z), lerp(WIDE.look.y, f.y, z), lerp(WIDE.look.z, f.z, z))
+    look.set(lerp(WIDE.look.x, f.x, z), lerp(portrait ? 1.8 : WIDE.look.y, f.y, z), lerp(WIDE.look.z, f.z, z))
     camera.lookAt(look)
+  })
+  return null
+}
+
+/** Mounts only once everything inside the Suspense has loaded; a few frames later the loader is released. */
+function SceneReady() {
+  const frames = useRef(0)
+  useFrame(() => {
+    if (++frames.current === 8) useStore.getState().setReady()
   })
   return null
 }
@@ -81,6 +93,9 @@ function CameraRig() {
 export default function Scene() {
   const view = useStore((s) => s.view)
   const first = useRef(true)
+
+  // coloured light through the glass: drawn from the sun into a small texture that the stones and floor sample
+  useFrame(({ gl, scene, clock }) => renderCaustics(gl, scene, clock.elapsedTime), -1)
 
   // State machine -> GSAP timeline (showcase <-> detail)
   useEffect(() => {
@@ -99,7 +114,7 @@ export default function Scene() {
         intensity={3.8}
         color="#ffe3bf"
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1536, 1536]}
         shadow-camera-left={-8}
         shadow-camera-right={8}
         shadow-camera-top={8}
@@ -108,8 +123,9 @@ export default function Scene() {
         shadow-camera-far={35}
         shadow-bias={-0.0006}
         shadow-normalBias={0.03}
-        shadow-radius={6}
-        shadow-blurSamples={24}
+        shadow-radius={9}
+        shadow-blurSamples={16}
+        shadow-intensity={0.86}
       />
       {/* gentle warm spot from above; kept well below the sun so it doesn't wash out the cast shadows */}
       <spotLight position={[1.5, 10, 5]} target-position={[1.5, 1, 0]} angle={0.75} penumbra={1} intensity={12} decay={1.4} color="#ffd9a6" />
@@ -130,6 +146,7 @@ export default function Scene() {
       <Suspense fallback={null}>
         <Floor />
         <Showcase />
+        <SceneReady />
       </Suspense>
       <CameraRig />
     </>

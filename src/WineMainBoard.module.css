@@ -26,6 +26,6 @@
 .tagline em { font-weight: 700; }
 
 @media (max-width: 820px) {
-  .hero { left: 16px; top: 44px; bottom: auto; margin: 0; transform: none; gap: 12px; }
-  .tagline { padding-left: 0; font-size: 13px; }
+  .hero { left: 16px; top: 22px; bottom: auto; margin: 0; transform: none; gap: 8px; }
+  .tagline { padding-left: 0; font-size: 12px; line-height: 1.3; }
 }

@@ -4,6 +4,7 @@
 // front sandstone slab).
 //
 // Visual fields
+//   model        optional .glb path in /public: used instead of the procedural bottle
 //   shape        'bordeaux' | 'burgundy' | 'tall'   bottle silhouette
 //   glassOpacity < 1 = clear flint glass, otherwise dark green glass
 //   wine         liquid colour (bottle interior, glass, pour)
@@ -13,6 +14,11 @@
 export const WINES = [
   {
     id: 'frogs-leap-zinfandel',
+    price: 259000, // ₮ per bottle
+    tagline: 'Гал дээр шарсан махан зоогтой зохицох шүүслэг амт',
+    kind: 'Улаан дарс',
+    // posters shown in the detail view: [history (tall), expert quote, taste + pairing]
+    posters: ['/poster/819571695_122107094859479069_9106929727244089871_n.jpg', '/poster/820064542_122107094883479069_5334449124841700529_n.jpg', '/poster/819571698_122107094913479069_7781061161849439194_n.jpg'],
     name: "Frog's Leap",
     sub: 'Napa Valley',
     year: 2021,
@@ -22,7 +28,8 @@ export const WINES = [
     tasting: 'Интоор, цангис, хар жимсгэнэ, халуун ногоо болон дулаахан шүүслэг шинэхэн жимсний амт.',
     notes: ['Интоор', 'Цангис', 'Хар жимсгэнэ', 'Халуун ногоо'],
     pairing: 'Ил гал дээр шарсан мах, smoked BBQ, халуун ногоотой махан зоог',
-    shape: 'bordeaux', wine: '#3e0a14', glass: '#0b1610', glassOpacity: 1, foil: '#6a1f2c',
+    labelImg: '/labels/frogs-leap-zinfandel.jpg', labelSize: [0.8, 1.15], labelY: 0.86, // photo of the real label
+    shape: 'bordeaux', wine: '#3e0a14', glass: '#0b1610', glassOpacity: 1, foil: '#1f1c1d',
     labelBg: '#efe6d0', labelInk: '#2a1a0c', label: '#5a3a1a',
     story: {
       title: 'Байгалийн унаган амтыг лонхонд цоожилсон нь',
@@ -36,6 +43,12 @@ export const WINES = [
   },
   {
     id: 'heitz-cellar-cabernet',
+    price: 549000, // ₮ per bottle
+    tagline: 'Напа хөндийн амьд түүх. Оройн зоогийн оргил үед задлах лонх',
+    model: '/bottle/Wine%20bottle.glb', // real 3D model instead of the procedural bottle
+    kind: 'Улаан дарс',
+    // posters shown in the detail view: [history (tall), expert quote, taste + pairing]
+    posters: ['/poster/819483038_122107097007479069_5820519477215037560_n.jpg', '/poster/820114373_122107097013479069_9209346063338926546_n.jpg', '/poster/818813391_122107097049479069_4833541350436137231_n.jpg'],
     name: 'Heitz Cellar',
     sub: 'Established 1961',
     year: 2019,
@@ -59,6 +72,11 @@ export const WINES = [
   },
   {
     id: 'dolce-late-harvest',
+    price: 489000, // ₮ per bottle
+    tagline: 'Үдшийг хамгийн дурсамжтайгаар өндөрлүүлэх хундага дахь шингэн алт',
+    kind: 'Амтат (дессерт) дарс',
+    // posters shown in the detail view: [history (tall), expert quote, taste + pairing]
+    posters: ['/poster/818940390_122107100439479069_8706730569914185173_n.jpg', '/poster/819741355_122107100451479069_41429285872621478_n.jpg', '/poster/821223468_122107100445479069_4073234097729235694_n.jpg'],
     name: 'Dolce',
     sub: 'Late Harvest',
     year: null, // the post gives no vintage
@@ -68,7 +86,8 @@ export const WINES = [
     tasting: 'Зөгийн бал, боловсорсон чангаанз, халуун орны жимс, карамель болон хатаасан жимсний тансаг амт.',
     notes: ['Зөгийн бал', 'Чангаанз', 'Халуун орны жимс', 'Карамель'],
     pairing: 'Бүх төрлийн дессерт, бялуу, зөгийн бал, цөцгий, бяслаг, шинэхэн жимс',
-    shape: 'tall', wine: '#e0a53a', glass: '#d8a848', glassOpacity: 0.5, foil: '#c9a24b',
+    labelImg: '/labels/dolce.png', labelSize: [0.76, 1.51], labelY: 0.95, // photo of the real label
+    shape: 'tall', wine: '#e0a53a', glass: '#d8a848', glassOpacity: 0.5, foil: '#a37419',
     labelBg: null, labelInk: '#7a4e0e', label: '#b8862a',
     story: {
       title: 'Хундага дахь шингэн алт',
@@ -82,6 +101,11 @@ export const WINES = [
   },
   {
     id: 'duckhorn-merlot',
+    price: 289000, // ₮ per bottle
+    tagline: 'Ямар ч хоолтой төгс хорших хамгийн баялаг, тэнцвэртэй дарс',
+    kind: 'Улаан дарс',
+    // posters shown in the detail view: [history (tall), expert quote, taste + pairing]
+    posters: ['/poster/795507916_122105904015479069_2500325303936925729_n.jpg', '/poster/797058440_122105904081479069_8379028711600651850_n.jpg', '/poster/818261190_122105904069479069_1138051999570459966_n.jpg'],
     name: 'Duckhorn',
     sub: 'Napa Valley',
     year: 2021,
@@ -91,7 +115,8 @@ export const WINES = [
     tasting: 'Боловсорсон чавга, хар интоор, улаан үхрийн нүд, ургамал болон нарийн боовны дулаахан амтлагч.',
     notes: ['Чавга', 'Хар интоор', 'Улаан үхрийн нүд', 'Baking spice'],
     pairing: 'Үхэр, хонины махан стейк, шүүслэг бууз, хуушуур',
-    shape: 'bordeaux', wine: '#3a0a14', glass: '#0b1610', glassOpacity: 1, foil: '#6a1f2c',
+    labelImg: '/labels/duckhorn.jpg', labelSize: [0.8, 1.16], labelY: 0.86, // photo of the real label
+    shape: 'bordeaux', wine: '#3a0a14', glass: '#0b1610', glassOpacity: 1, foil: '#27100f',
     labelBg: '#efe2c0', labelInk: '#2a1a0c', label: '#4a5a2a',
     story: {
       title: 'Merlot дарсны алтан стандарт',
@@ -105,6 +130,11 @@ export const WINES = [
   },
   {
     id: 'stags-leap-karia',
+    price: 229000, // ₮ per bottle
+    tagline: 'Амтлах мэдрэхүйг сэргээх тансаг, сэргэг сонголт',
+    kind: 'Цагаан дарс',
+    // posters shown in the detail view: [history (tall), expert quote, taste + pairing]
+    posters: ['/poster/818140232_122105851161479069_9089724457036532358_n.jpg', '/poster/818761222_122105851221479069_7341843786724226245_n.jpg', '/poster/819207757_122105851209479069_4760497911068614950_n.jpg'],
     name: "Stag's Leap KARIA",
     sub: 'Wine Cellars',
     year: null, // the post gives no vintage
@@ -114,7 +144,8 @@ export const WINES = [
     tasting: 'Шинэхэн алим, лийр, нимбэгний хальс, цагаан тоор, хаврын цэцэг болон царс модны зөөлөн аяс.',
     notes: ['Алим', 'Лийр', 'Нимбэгний хальс', 'Цагаан тоор', 'Ваниль'],
     pairing: 'Халуун бууз, жигнэсэн банш, шинэхэн бяслаг, сүүн суурьтай хөнгөн зууш',
-    shape: 'burgundy', wine: '#e6d58a', glass: '#cfd9b0', glassOpacity: 0.42, foil: '#b8a57a',
+    labelImg: '/labels/stags-leap-karia.jpg', labelSize: [0.8, 1.1], labelY: 0.76, // photo of the real label
+    shape: 'burgundy', wine: '#e6d58a', glass: '#cfd9b0', glassOpacity: 0.42, foil: '#2c1317',
     labelBg: '#f3f0e6', labelInk: '#2a2418', label: '#7a6a3a',
     story: {
       title: '1976 онд дэлхийг шуугиулсан домогт эдлэнгийн бүтээл',
@@ -128,6 +159,11 @@ export const WINES = [
   },
   {
     id: 'migration-pinot-noir',
+    price: 199000, // ₮ per bottle
+    tagline: 'Махны амтыг тодотгох уян зөөлөн, хөрслөг урлал',
+    kind: 'Улаан дарс',
+    // posters shown in the detail view: [history (tall), expert quote, taste + pairing]
+    posters: ['/poster/794991875_122105900349479069_8999885654160799527_n.jpg', '/poster/817176677_122105900397479069_5509006948515995770_n.jpg', '/poster/800642479_122105900433479069_5594727857001561267_n.jpg'],
     name: 'Migration',
     sub: 'Sonoma Coast',
     year: 2022,
@@ -137,7 +173,8 @@ export const WINES = [
     tasting: 'Интоор, бөөрөлзгөнө, гүзээлзгэний шүүслэг амт, ойн хөрс болон нарийн амтлагчийн анхилуун үнэр.',
     notes: ['Интоор', 'Бөөрөлзгөнө', 'Гүзээлзгэнэ', 'Ойн хөрс'],
     pairing: 'Шарсан хурга, хонины мах, мөөг, ганга өвсөөр амталсан шарсан ногоо',
-    shape: 'burgundy', wine: '#4a0f1c', glass: '#100a0a', glassOpacity: 0.5, foil: '#4a1420',
+    labelImg: '/labels/migration.jpg', labelSize: [0.8, 1.07], labelY: 0.76, // photo of the real label
+    shape: 'burgundy', wine: '#4a0f1c', glass: '#100a0a', glassOpacity: 0.5, foil: '#4a1923',
     labelBg: '#efe4c6', labelInk: '#2a1a0c', label: '#6a3a1a',
     story: {
       title: 'Далайн сэрүүн салхинд боловсорсон Пино Нуар',
@@ -150,3 +187,6 @@ export const WINES = [
     }
   }
 ]
+
+/** 259000 -> "259,000 ₮" */
+export const fmtPrice = (n) => `${n.toLocaleString('en-US')} ₮`

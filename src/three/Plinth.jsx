@@ -1,6 +1,7 @@
 import { forwardRef, useImperativeHandle, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useTexture } from '@react-three/drei'
+import { receiveCaustics } from './causticShare'
 
 // Photo-scanned CC0 stone (see public/textures/CREDITS.txt): colour + normal + roughness per finish.
 // `tile` = world units covered by one repeat of the texture, `normal` = relief strength.
@@ -112,6 +113,8 @@ export const StoneBlock = forwardRef(function StoneBlock(
         color={tint}
         roughness={1}
         metalness={0}
+        onBeforeCompile={receiveCaustics}
+        customProgramCacheKey={() => 'caustic-recv'}
       />
     </mesh>
   )

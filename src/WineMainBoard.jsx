@@ -8,7 +8,7 @@ import styles from './WineMainBoard.module.css'
 /**
  * Landing view = the banner: brand at the left, all bottles on stone pedestals at the right.
  * Clicking a bottle calls store.openDetail(i); three/anim.js then flies the camera in and
- * hands over to the split detail view (StoryPanel).
+ * hands over to the detail view (StoryPanel).
  */
 export default function WineMainBoard() {
   const view = useStore((s) => s.view)
@@ -24,7 +24,7 @@ export default function WineMainBoard() {
       delay: detail ? 0 : 1.0,
       stagger: 0.05,
       ease: 'power2.out',
-      overwrite: 'auto'
+      overwrite: true
     })
     root.current.style.pointerEvents = detail ? 'none' : ''
   }, [view])
