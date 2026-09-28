@@ -104,11 +104,10 @@ export default function StoryPanel() {
 
   return (
     <section ref={root} className="story" style={{ visibility: 'hidden' }} aria-hidden={!open}>
-      <button className="story__back" onClick={closeDetail}>
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8">
-          <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+      <button className="story__back" onClick={closeDetail} aria-label="Буцах">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M20 12H4M10 6l-6 6 6 6" />
         </svg>
-        Буцах
       </button>
 
       <div className="parchment">
