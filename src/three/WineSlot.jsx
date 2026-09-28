@@ -4,6 +4,7 @@ import { StoneBlock } from './Plinth'
 import Bottle from './Bottle'
 import { anim } from './anim'
 import { useStore } from '../store'
+import { motion, nudge } from './perf'
 import { getBlobTexture, getSoftRectTexture } from './textures'
 
 
@@ -34,7 +35,7 @@ const WineSlot = forwardRef(function WineSlot({ wine, place, selected, onOver, o
     const ready = () => useStore.getState().view === 'detail' && anim.detail > 0.9
     const down = (e) => {
       if (!ready() || e.target.tagName !== 'CANVAS') return
-      r.drag = true; r.x = e.clientX; r.vel = 0
+      r.drag = true; motion.drag = true; r.x = e.clientX; r.vel = 0
       document.body.style.cursor = 'grabbing'
     }
     const move = (e) => {
@@ -44,7 +45,7 @@ const WineSlot = forwardRef(function WineSlot({ wine, place, selected, onOver, o
       r.y += dx * 0.012
       r.vel = dx * 0.012
     }
-    const up = () => { r.drag = false; if (ready()) document.body.style.cursor = 'grab' }
+    const up = () => { r.drag = false; motion.drag = false; if (ready()) document.body.style.cursor = 'grab' }
     const hover = (e) => {
       if (r.drag) return
       document.body.style.cursor = ready() && e.target.tagName === 'CANVAS' ? 'grab' : ''
@@ -70,6 +71,7 @@ const WineSlot = forwardRef(function WineSlot({ wine, place, selected, onOver, o
     const r = rot.current
     if (!r.drag) {
       r.y += r.vel; r.vel *= Math.pow(0.02, dt)
+      if (Math.abs(r.vel) > 0.0008) nudge(400)
       // when the bottle is put back on the shelf it turns to face front again
       if (!selected || anim.detail < 0.5) {
         const TAU = Math.PI * 2

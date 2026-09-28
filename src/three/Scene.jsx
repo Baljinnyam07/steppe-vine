@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { useStore } from '../store'
 import { anim, playDetail } from './anim'
 import { receiveCaustics, renderCaustics } from './causticShare'
-import { LOW } from './perf'
+import { LOW, motion, nudge } from './perf'
 import { getWallTexture, getGrainBump } from './textures'
 import Showcase from './Showcase'
 
@@ -95,6 +95,16 @@ export default function Scene() {
   const view = useStore((s) => s.view)
   const first = useRef(true)
 
+  // Shadows are re-rendered only while something moves (or during the first frames), never every frame.
+  useEffect(() => {
+    nudge(3500)
+    return useStore.subscribe((s, p) => { if (s.view !== p.view || s.index !== p.index) nudge(3200) })
+  }, [])
+  useFrame(({ gl }) => {
+    gl.shadowMap.autoUpdate = false
+    if (motion.drag || performance.now() < motion.until) gl.shadowMap.needsUpdate = true
+  }, -2)
+
   // coloured light through the glass: drawn from the sun into a small texture that the stones and floor sample
   useFrame(({ gl, scene, clock }) => { if (!LOW) renderCaustics(gl, scene, clock.elapsedTime) }, -1)
 
@@ -129,7 +139,7 @@ export default function Scene() {
         shadow-intensity={0.86}
       />
       {/* gentle warm spot from above; kept well below the sun so it doesn't wash out the cast shadows */}
-      <spotLight position={[1.5, 10, 5]} target-position={[1.5, 1, 0]} angle={0.75} penumbra={1} intensity={12} decay={1.4} color="#ffd9a6" />
+      {!LOW && <spotLight position={[1.5, 10, 5]} target-position={[1.5, 1, 0]} angle={0.75} penumbra={1} intensity={12} decay={1.4} color="#ffd9a6" />}
 
       {/* Procedural env (no network): warm window-like strips for glass reflections. Kept low as ambient
           light so the sun's cast shadows stay visible; the bottle glass boosts it back via envMapIntensity. */}

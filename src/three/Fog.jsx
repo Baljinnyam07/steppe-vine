@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { MathUtils } from 'three'
 import { anim } from './anim'
+import { LOW } from './perf'
 
 const vertex = /* glsl */ `
   attribute float aSeed;
@@ -117,9 +118,14 @@ const bankFragment = /* glsl */ `
     f = f * f * (3.0 - 2.0 * f);
     return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
   }
+  #ifdef LOWQ
+  #define OCT 2
+  #else
+  #define OCT 3
+  #endif
   float fbm(vec2 p) {
     float a = 0.5, s = 0.0;
-    for (int i = 0; i < 3; i++) { s += a * noise(p); p = p * 2.03 + vec2(17.1, 9.2); a *= 0.5; }
+    for (int i = 0; i < OCT; i++) { s += a * noise(p); p = p * 2.03 + vec2(17.1, 9.2); a *= 0.5; }
     return s;
   }
   float fbm2(vec2 p) { return 0.6 * noise(p) + 0.4 * noise(p * 2.07 + vec2(3.7, 8.1)); }
@@ -138,7 +144,11 @@ const bankFragment = /* glsl */ `
     vec2 q = vec2(fbm(p + vec2(0.0, t * 0.6)), fbm(p + vec2(5.2, 1.3) - vec2(t * 0.4, 0.0)));
     float n = fbm(p + 1.7 * q + vec2(0.0, -t * 0.35));
     // second, finer layer of detail (wisps riding on the billows)
+    #ifdef LOWQ
+    float fine = 0.5;
+    #else
     float fine = fbm2(p * 2.6 + q * 2.0 + vec2(t * 1.6, t * 0.5));
+    #endif
 
     float h = vUv.y;
     float profile = pow(1.0 - clamp(h / uTop, 0.0, 1.0), 1.5);          // dense at the floor, thin above
@@ -221,7 +231,7 @@ function FogBank({ z, height, density, speed, scale, seed }) {
   return (
     <mesh position={[0, height / 2 - 0.02, z]} renderOrder={4} frustumCulled={false}>
       <planeGeometry args={[W, height]} />
-      <shaderMaterial ref={mat} uniforms={uniforms} vertexShader={bankVertex} fragmentShader={bankFragment} transparent depthWrite={false} />
+      <shaderMaterial ref={mat} uniforms={uniforms} vertexShader={bankVertex} fragmentShader={LOW ? '#define LOWQ\n' + bankFragment : bankFragment} transparent depthWrite={false} />
     </mesh>
   )
 }

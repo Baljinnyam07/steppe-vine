@@ -197,6 +197,18 @@ function CausticProxy({ wine, geometry }) {
   )
 }
 
+// Wine for weak devices: opaque, but shaded like liquid (dark in the middle, glowing ruby / gold at the rim).
+const cheapWine = (rim) => (sh) => {
+  sh.uniforms.uRim = { value: rim }
+  sh.fragmentShader = sh.fragmentShader
+    .replace('void main() {', `uniform vec3 uRim;
+void main() {`)
+    .replace('#include <opaque_fragment>', `
+      float fr = pow(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 1.8);
+      outgoingLight = mix(outgoingLight * 0.7, outgoingLight * 1.1 + uRim * 0.35, fr);
+      #include <opaque_fragment>`)
+}
+
 /**
  * Real-glass bottle: a transmissive (see-through, refracting) glass shell around an actual volume of
  * wine. Through dark glass the full body reads almost black-red while the empty neck stays a lighter
@@ -236,8 +248,8 @@ function ProceduralBottle({ wine }) {
     c.getHSL(hsl)
     // reds: a bright ruby absorber (deep but never black); whites / dessert wines: saturated gold
     return lum < 0.3
-      ? { absorb: new THREE.Color().setHSL(hsl.h, 0.95, 0.17), dist: 0.07 }
-      : { absorb: new THREE.Color().setHSL(hsl.h, 0.9, 0.55), dist: 1.5 }
+      ? { absorb: new THREE.Color().setHSL(hsl.h, 0.95, 0.17), dist: 0.07, flat: c.clone().multiplyScalar(0.55), glow: 0.04, rim: new THREE.Color().setHSL(hsl.h, 0.9, 0.32) }
+      : { absorb: new THREE.Color().setHSL(hsl.h, 0.9, 0.55), dist: 1.5, flat: c.clone(), glow: 0.32, rim: new THREE.Color().setHSL(hsl.h, 0.8, 0.6) }
   }, [wine.wine])
   const shadowMat = useMemo(() => makeGlassShadowMaterial(clear ? 0.26 : 0.66), [clear])
   const labelR = g.r + 0.006
@@ -248,20 +260,33 @@ function ProceduralBottle({ wine }) {
       {/* the wine: a real volume of liquid. It refracts whatever is behind the bottle and absorbs light
           with the wine's own colour, so it looks deep ruby / gold and shows the wall bent through it. */}
       <mesh geometry={g.liquid}>
-        <meshPhysicalMaterial
-          ref={liquidMat}
-          color="#ffffff"
-          transmission={1}
-          ior={1.34}
-          thickness={0.75}
-          roughness={0.02}
-          attenuationColor={liquid.absorb}
-          attenuationDistance={liquid.dist}
-          specularIntensity={1}
-          clearcoat={0.5}
-          clearcoatRoughness={0.03}
-          envMapIntensity={0.55}
-        />
+        {LOW ? (
+          // cheap wine (no see-through pass): opaque body that is lighter and glowing at the rim, darker in the middle
+          <meshStandardMaterial
+            ref={liquidMat}
+            color={liquid.flat}
+            roughness={0.12}
+            emissive={liquid.flat}
+            emissiveIntensity={liquid.glow}
+            onBeforeCompile={cheapWine(liquid.rim)}
+            customProgramCacheKey={() => 'cheap-wine'}
+          />
+        ) : (
+          <meshPhysicalMaterial
+            ref={liquidMat}
+            color="#ffffff"
+            transmission={1}
+            ior={1.34}
+            thickness={0.75}
+            roughness={0.02}
+            attenuationColor={liquid.absorb}
+            attenuationDistance={liquid.dist}
+            specularIntensity={1}
+            clearcoat={0.5}
+            clearcoatRoughness={0.03}
+            envMapIntensity={0.55}
+          />
+        )}
       </mesh>
       {/* shadow-only proxy of the glass (see makeGlassShadowMaterial) */}
       <mesh geometry={g.body} castShadow customDepthMaterial={shadowMat} renderOrder={-1}>
