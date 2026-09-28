@@ -261,3 +261,9 @@
 @media (max-width: 820px) {
   .det__info { margin: 0 14px; padding: 22px 20px 20px; }
 }
+
+/* phones: the cart window follows the visible screen (above the keyboard), not the full screen */
+@media (max-width: 820px) {
+  .modal { top: var(--vvt, 0px); bottom: auto; height: var(--vvh, 100%); }
+  .order--cart { max-height: calc(var(--vvh, 100dvh) - 6px); }
+}

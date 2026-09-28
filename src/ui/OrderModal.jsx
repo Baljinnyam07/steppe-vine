@@ -66,6 +66,26 @@ export default function OrderModal() {
     return () => window.removeEventListener('keydown', key)
   }, [orderOpen, closeOrder])
 
+  // The on-screen keyboard: keep the window inside the VISIBLE part of the screen (visualViewport), so the
+  // fields and the send button are never hidden behind the keyboard.
+  useEffect(() => {
+    if (!orderOpen) return
+    const vv = window.visualViewport
+    const root = document.documentElement
+    const fit = () => {
+      root.style.setProperty('--vvh', `${vv ? vv.height : window.innerHeight}px`)
+      root.style.setProperty('--vvt', `${vv ? vv.offsetTop : 0}px`)
+    }
+    fit()
+    vv?.addEventListener('resize', fit)
+    vv?.addEventListener('scroll', fit)
+    return () => {
+      vv?.removeEventListener('resize', fit)
+      vv?.removeEventListener('scroll', fit)
+      root.style.removeProperty('--vvh'); root.style.removeProperty('--vvt')
+    }
+  }, [orderOpen])
+
   useEffect(() => {
     if (!done || !check.current) return
     gsap.fromTo(check.current, { strokeDashoffset: 60 }, { strokeDashoffset: 0, duration: 0.8, ease: 'power2.out', delay: 0.15 })
@@ -155,7 +175,12 @@ export default function OrderModal() {
             </div>
           </div>
         ) : (
-          <form className="order__form" onSubmit={submit} noValidate onFocus={() => { if (!started.current) { started.current = true; track('form_start'); reach(4) } }}>
+          <form className="order__form" onSubmit={submit} noValidate onFocus={(e) => {
+            if (!started.current) { started.current = true; track('form_start'); reach(4) }
+            // once the keyboard is up, bring the field you are typing in to the middle of the window
+            const t = e.target
+            if (t.matches?.('input, textarea')) setTimeout(() => t.scrollIntoView({ block: 'center', behavior: 'smooth' }), 320)
+          }}>
             <h3 id="order-title">Сагс</h3>
 
             {items.length === 0 ? (
