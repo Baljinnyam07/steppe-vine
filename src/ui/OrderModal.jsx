@@ -35,7 +35,6 @@ export default function OrderModal() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(null)
-  const [copied, setCopied] = useState(false)
 
   const items = useMemo(() => WINES.filter((w) => cart[w.id] > 0).map((w) => ({ w, qty: cart[w.id] })), [cart])
   const total = items.reduce((a, i) => a + i.w.price * i.qty, 0)
@@ -53,7 +52,7 @@ export default function OrderModal() {
   // reset + entrance animation each time it opens
   useEffect(() => {
     if (!orderOpen) return
-    setF(EMPTY()); setTouched({}); setError(''); setDone(null); setBusy(false); setCopied(false); started.current = false
+    setF(EMPTY()); setTouched({}); setError(''); setDone(null); setBusy(false); started.current = false
     const t = setTimeout(() => firstField.current?.focus({ preventScroll: true }), 400)
     return () => clearTimeout(t)
   }, [orderOpen])
@@ -93,14 +92,6 @@ export default function OrderModal() {
 
   if (!orderOpen) return null
 
-  const summary = (o) =>
-    [
-      `Захиалга ${o.id}`,
-      ...o.items.map((i) => `${i.wine} ${i.year ?? ''} — ${i.qty} шил × ${fmtPrice(i.price)}`),
-      `Нийт: ${fmtPrice(o.total)}`,
-      `${o.name}, ${o.phone}${o.email ? `, ${o.email}` : ''}`,
-      o.note ? `Тэмдэглэл: ${o.note}` : ''
-    ].filter(Boolean).join('\n')
 
   const submit = async (e) => {
     e.preventDefault()
@@ -144,9 +135,6 @@ export default function OrderModal() {
     }
   }
 
-  const copy = async () => {
-    try { await navigator.clipboard.writeText(summary(done)); setCopied(true); setTimeout(() => setCopied(false), 1800) } catch { /* ignore */ }
-  }
 
   return (
     <div className="modal" onClick={closeOrder}>
@@ -170,7 +158,6 @@ export default function OrderModal() {
             </ul>
             <p className="order__hint">Бид тантай утсаар холбогдож баталгаажуулна.</p>
             <div className="order__actions">
-              <button className="btn-outline" onClick={copy}>{copied ? 'Хуулагдлаа ✓' : 'Хуулах'}</button>
               <button className="btn-primary" onClick={closeOrder}><span className="btn-primary__shine" /><span className="btn-primary__label">Хаах</span></button>
             </div>
           </div>
