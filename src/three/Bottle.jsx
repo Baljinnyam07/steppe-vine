@@ -56,13 +56,13 @@ function shapeGeometry(name) {
   const foil = [[n + 0.012, 2.5], [n + 0.015, 2.55], [n + 0.015, 2.93], [n + 0.032, 2.96], [n + 0.032, 3.0], [n - 0.004, 3.0]]
   // wine inside: the body profile shrunk by the glass wall, filled up to the neck
   // (include the heel points: starting higher made the wine a long cone from the base up to the shoulder)
-  const inner = s.pts.filter(([, y]) => y >= 0.06 && y < LIQUID_TOP).map(([r, y]) => [r * 0.925, Math.max(y, 0.1)])
+  const inner = s.pts.filter(([, y]) => y >= 0.06 && y < LIQUID_TOP).map(([r, y]) => [r * 0.925, Math.max(y, 0.045)])
   // the wine surface is flat: end the profile at the glass wall exactly at the fill level (jumping straight to the axis made a pointed cone on top)
   const k = s.pts.findIndex(([, y]) => y >= LIQUID_TOP)
   const [r0, y0] = s.pts[k - 1], [r1, y1] = s.pts[k]
   const rTop = (r0 + ((r1 - r0) * (LIQUID_TOP - y0)) / (y1 - y0)) * 0.925
   inner.push([rTop, LIQUID_TOP])
-  const liquid = [[0, 0.12], ...inner, [0, LIQUID_TOP]]
+  const liquid = [[0, 0.06], ...inner, [0, LIQUID_TOP]]
   return (cache[name] = {
     ...s,
     liqR: inner[inner.length - 1][0],
@@ -197,18 +197,6 @@ function CausticProxy({ wine, geometry }) {
   )
 }
 
-// Wine for weak devices: opaque, but shaded like liquid (dark in the middle, glowing ruby / gold at the rim).
-const cheapWine = (rim) => (sh) => {
-  sh.uniforms.uRim = { value: rim }
-  sh.fragmentShader = sh.fragmentShader
-    .replace('void main() {', `uniform vec3 uRim;
-void main() {`)
-    .replace('#include <opaque_fragment>', `
-      float fr = pow(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 1.8);
-      outgoingLight = mix(outgoingLight * 0.7, outgoingLight * 1.1 + uRim * 0.35, fr);
-      #include <opaque_fragment>`)
-}
-
 /**
  * Real-glass bottle: a transmissive (see-through, refracting) glass shell around an actual volume of
  * wine. Through dark glass the full body reads almost black-red while the empty neck stays a lighter
@@ -260,33 +248,20 @@ function ProceduralBottle({ wine }) {
       {/* the wine: a real volume of liquid. It refracts whatever is behind the bottle and absorbs light
           with the wine's own colour, so it looks deep ruby / gold and shows the wall bent through it. */}
       <mesh geometry={g.liquid}>
-        {LOW ? (
-          // cheap wine (no see-through pass): opaque body that is lighter and glowing at the rim, darker in the middle
-          <meshStandardMaterial
-            ref={liquidMat}
-            color={liquid.flat}
-            roughness={0.12}
-            emissive={liquid.flat}
-            emissiveIntensity={liquid.glow}
-            onBeforeCompile={cheapWine(liquid.rim)}
-            customProgramCacheKey={() => 'cheap-wine'}
-          />
-        ) : (
-          <meshPhysicalMaterial
-            ref={liquidMat}
-            color="#ffffff"
-            transmission={1}
-            ior={1.34}
-            thickness={0.75}
-            roughness={0.02}
-            attenuationColor={liquid.absorb}
-            attenuationDistance={liquid.dist}
-            specularIntensity={1}
-            clearcoat={0.5}
-            clearcoatRoughness={0.03}
-            envMapIntensity={0.55}
-          />
-        )}
+        <meshPhysicalMaterial
+          ref={liquidMat}
+          color="#ffffff"
+          transmission={1}
+          ior={1.34}
+          thickness={0.75}
+          roughness={0.02}
+          attenuationColor={liquid.absorb}
+          attenuationDistance={liquid.dist}
+          specularIntensity={1}
+          clearcoat={0.5}
+          clearcoatRoughness={0.03}
+          envMapIntensity={0.55}
+        />
       </mesh>
       {/* shadow-only proxy of the glass (see makeGlassShadowMaterial) */}
       <mesh geometry={g.body} castShadow customDepthMaterial={shadowMat} renderOrder={-1}>

@@ -3,7 +3,6 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { MathUtils } from 'three'
 import { anim } from './anim'
-import { LOW } from './perf'
 
 const vertex = /* glsl */ `
   attribute float aSeed;
@@ -231,7 +230,7 @@ function FogBank({ z, height, density, speed, scale, seed }) {
   return (
     <mesh position={[0, height / 2 - 0.02, z]} renderOrder={4} frustumCulled={false}>
       <planeGeometry args={[W, height]} />
-      <shaderMaterial ref={mat} uniforms={uniforms} vertexShader={bankVertex} fragmentShader={LOW ? '#define LOWQ\n' + bankFragment : bankFragment} transparent depthWrite={false} />
+      <shaderMaterial ref={mat} uniforms={uniforms} vertexShader={bankVertex} fragmentShader={bankFragment} transparent depthWrite={false} />
     </mesh>
   )
 }

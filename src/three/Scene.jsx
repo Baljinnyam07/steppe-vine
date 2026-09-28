@@ -139,7 +139,7 @@ export default function Scene() {
         shadow-intensity={0.86}
       />
       {/* gentle warm spot from above; kept well below the sun so it doesn't wash out the cast shadows */}
-      {!LOW && <spotLight position={[1.5, 10, 5]} target-position={[1.5, 1, 0]} angle={0.75} penumbra={1} intensity={12} decay={1.4} color="#ffd9a6" />}
+      <spotLight position={[1.5, 10, 5]} target-position={[1.5, 1, 0]} angle={0.75} penumbra={1} intensity={12} decay={1.4} color="#ffd9a6" />
 
       {/* Procedural env (no network): warm window-like strips for glass reflections. Kept low as ambient
           light so the sun's cast shadows stay visible; the bottle glass boosts it back via envMapIntensity. */}
