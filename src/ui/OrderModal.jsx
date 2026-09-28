@@ -3,46 +3,49 @@ import gsap from 'gsap'
 import { WINES, fmtPrice } from '../data/wines'
 import { useStore } from '../store'
 import { supabase } from '../lib/supabase'
-import { track } from '../lib/track'
+import { track, reach } from '../lib/track'
+import Stepper from './Stepper'
 
 /*
- * Order form. Orders go to Supabase (table `orders`, see supabase/schema.sql). Without VITE_SUPABASE_*
- * in .env nothing is sent: the order is only kept in this browser (localStorage 'sv-orders').
+ * The cart / checkout window. The wines come from the cart in the store (added from the catalogue), the
+ * visitor only adds a name and a phone number. Orders go to Supabase (table `orders`, see
+ * supabase/schema.sql); without VITE_SUPABASE_* in .env nothing is sent and the order is only kept in
+ * this browser (localStorage 'sv-orders').
  */
-const MAX_QTY = 3 // per customer, per bottle
-
 const digits = (s) => s.replace(/\D/g, '')
+// 99112233 -> "9911 2233" while typing
+const fmtPhone = (v) => { const d = digits(v).slice(0, 8); return d.length > 4 ? `${d.slice(0, 4)} ${d.slice(4)}` : d }
 const makeId = () => 'SV-' + Math.random().toString(36).slice(2, 8).toUpperCase()
-
-const EMPTY = { name: '', phone: '', email: '', note: '' }
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+const sub = (w) => `${w.grape}${w.year ? ` · ${w.year}` : ''} · ${w.volume} ml`
 
-function validate(f, total) {
-  const e = {}
-  if (total < 1) e.items = 'Дор хаяж нэг дарс сонгоно уу'
-  if (f.email.trim() && !EMAIL.test(f.email.trim())) e.email = 'Имэйл хаяг буруу байна'
-  if (f.name.trim().length < 2) e.name = 'Нэрээ оруулна уу'
-  if (digits(f.phone).length !== 8) e.phone = 'Утасны дугаар 8 оронтой байх ёстой'
-  return e
+const remembered = () => {
+  try { return JSON.parse(localStorage.getItem('sv-customer') || '{}') } catch { return {} }
 }
+const EMPTY = () => { const r = remembered(); return { name: '', phone: '', email: '', note: '', ...r, phone: fmtPhone(r.phone || '') } }
 
 export default function OrderModal() {
-  const { orderOpen, closeOrder, index } = useStore()
-  const wine = WINES[index]
+  const { orderOpen, closeOrder, cart, setQty, clearCart } = useStore()
   const box = useRef()
   const firstField = useRef()
   const check = useRef()
+  const started = useRef(false)
   const [f, setF] = useState(EMPTY)
-  const [qty, setQty] = useState({}) // wine id -> bottles (0..3)
   const [touched, setTouched] = useState({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [done, setDone] = useState(null) // the placed order
+  const [done, setDone] = useState(null)
   const [copied, setCopied] = useState(false)
 
-  const total = Object.values(qty).reduce((a, b) => a + b, 0)
-  const sum = WINES.reduce((a, w) => a + (qty[w.id] || 0) * w.price, 0)
-  const errors = useMemo(() => validate(f, total), [f, total])
+  const items = useMemo(() => WINES.filter((w) => cart[w.id] > 0).map((w) => ({ w, qty: cart[w.id] })), [cart])
+  const total = items.reduce((a, i) => a + i.w.price * i.qty, 0)
+  const bottles = items.reduce((a, i) => a + i.qty, 0)
+
+  const errors = {}
+  if (f.name.trim().length < 2) errors.name = 'Нэрээ оруулна уу'
+  if (digits(f.phone).length !== 8) errors.phone = 'Утасны дугаар 8 оронтой байх ёстой'
+  if (f.email.trim() && !EMAIL.test(f.email.trim())) errors.email = 'Имэйл хаяг буруу байна'
+
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }))
   const blur = (k) => () => setTouched((t) => ({ ...t, [k]: true }))
   const show = (k) => touched[k] && errors[k]
@@ -50,20 +53,19 @@ export default function OrderModal() {
   // reset + entrance animation each time it opens
   useEffect(() => {
     if (!orderOpen) return
-    setF(EMPTY); setQty({ [WINES[index].id]: 1 }); setTouched({}); setError(''); setDone(null); setBusy(false); setCopied(false)
-    const t = setTimeout(() => firstField.current?.focus(), 350)
+    setF(EMPTY()); setTouched({}); setError(''); setDone(null); setBusy(false); setCopied(false); started.current = false
+    const t = setTimeout(() => firstField.current?.focus({ preventScroll: true }), 400)
     return () => clearTimeout(t)
-  }, [orderOpen, index])
+  }, [orderOpen])
 
   useEffect(() => {
     if (!orderOpen) return
-    gsap.fromTo(box.current, { autoAlpha: 0, y: 28, scale: 0.97 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.55, ease: 'power3.out' })
+    gsap.fromTo(box.current, { autoAlpha: 0, y: 28, scale: 0.98 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.45, ease: 'power3.out' })
     const key = (e) => e.key === 'Escape' && closeOrder()
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
   }, [orderOpen, closeOrder])
 
-  // draw the check mark on success
   useEffect(() => {
     if (!done || !check.current) return
     gsap.fromTo(check.current, { strokeDashoffset: 60 }, { strokeDashoffset: 0, duration: 0.8, ease: 'power2.out', delay: 0.15 })
@@ -82,12 +84,13 @@ export default function OrderModal() {
 
   const submit = async (e) => {
     e.preventDefault()
-    setTouched({ name: true, phone: true, email: true, submit: true })
-    if (Object.keys(errors).length) return
+    setTouched({ name: true, phone: true, email: true })
+    if (Object.keys(errors).length || !items.length) { track('form_error', null, { fields: Object.keys(errors).join(',') || 'empty_cart' }); return }
     setBusy(true); setError('')
-    const items = WINES.filter((w) => qty[w.id] > 0).map((w) => ({ wineId: w.id, wine: w.name, year: w.year, qty: qty[w.id], price: w.price }))
     const order = {
-      id: makeId(), items, total: items.reduce((a, i) => a + i.qty * i.price, 0),
+      id: makeId(),
+      items: items.map(({ w, qty }) => ({ wineId: w.id, wine: w.name, year: w.year, qty, price: w.price })),
+      total,
       name: f.name.trim(), phone: digits(f.phone), email: f.email.trim(), note: f.note.trim(),
       createdAt: new Date().toISOString()
     }
@@ -95,7 +98,7 @@ export default function OrderModal() {
       if (supabase) {
         // one row per wine, all sent in a single request (all saved or none)
         const { error: err } = await supabase.from('orders').insert(
-          items.map((i) => ({
+          order.items.map((i) => ({
             code: order.id, wine_id: i.wineId, wine: i.wine, qty: i.qty,
             name: order.name, phone: order.phone, email: order.email || null, note: order.note
           }))
@@ -105,10 +108,14 @@ export default function OrderModal() {
       try {
         const all = JSON.parse(localStorage.getItem('sv-orders') || '[]')
         localStorage.setItem('sv-orders', JSON.stringify([...all, order]))
+        localStorage.setItem('sv-customer', JSON.stringify({ name: order.name, phone: order.phone, email: order.email }))
       } catch { /* storage may be blocked: the order still went through */ }
+      order.items.forEach((i) => track('order_sent', i.wineId, { code: order.id, qty: i.qty, total: order.total }))
+      reach(5)
+      clearCart()
       setDone(order)
-      items.forEach((i) => track('order_sent', i.wineId))
     } catch (err) {
+      track('order_failed', null, { reason: String(err?.message).includes('LIMIT_3') ? 'limit' : 'error' })
       setError(String(err?.message).includes('LIMIT_3')
         ? `Нэг утасны дугаараас нэг дарсыг нийт 3 шил хүртэл захиалах боломжтой${err.details ? ` (${err.details})` : ''}.`
         : 'Илгээж чадсангүй. Интернэтээ шалгаад дахин оролдоно уу.')
@@ -123,12 +130,8 @@ export default function OrderModal() {
 
   return (
     <div className="modal" onClick={closeOrder}>
-      <div className="order glass" ref={box} role="dialog" aria-modal="true" aria-labelledby="order-title" onClick={(e) => e.stopPropagation()}>
+      <div className="order order--cart glass" ref={box} role="dialog" aria-modal="true" aria-labelledby="order-title" onClick={(e) => e.stopPropagation()}>
         <button className="modal__x" onClick={closeOrder} aria-label="Хаах">×</button>
-
-        <aside className="order__wine">
-          <img className="order__poster" src={wine.posters?.[0]} alt={wine.name} />
-        </aside>
 
         {done ? (
           <div className="order__done">
@@ -145,70 +148,71 @@ export default function OrderModal() {
               <li><span>Утас</span><b>{done.phone}</b></li>
               {done.email && <li><span>Имэйл</span><b>{done.email}</b></li>}
             </ul>
-            <p className="order__hint">Захиалгын дугаараа хадгална уу. Бид тантай утсаар холбогдож баталгаажуулна.</p>
+            <p className="order__hint">Бид тантай утсаар холбогдож баталгаажуулна.</p>
             <div className="order__actions">
               <button className="btn-outline" onClick={copy}>{copied ? 'Хуулагдлаа ✓' : 'Хуулах'}</button>
               <button className="btn-primary" onClick={closeOrder}><span className="btn-primary__shine" /><span className="btn-primary__label">Хаах</span></button>
             </div>
           </div>
         ) : (
-          <form className="order__form" onSubmit={submit} noValidate>
-            <h3 id="order-title">Захиалга</h3>
-            <p className="order__lead">Мэдээллээ үлдээгээрэй, бид тантай холбогдож баталгаажуулна.</p>
+          <form className="order__form" onSubmit={submit} noValidate onFocus={() => { if (!started.current) { started.current = true; track('form_start'); reach(4) } }}>
+            <h3 id="order-title">Сагс</h3>
 
-            <div className="fld">
-              <label htmlFor="o-name">Нэр</label>
-              <input id="o-name" ref={firstField} value={f.name} onChange={set('name')} onBlur={blur('name')} placeholder="Таны нэр" autoComplete="name" aria-invalid={!!show('name')} />
-              {show('name') && <span className="fld__err">{errors.name}</span>}
-            </div>
-
-            <div className="fld">
-              <label htmlFor="o-phone">Утас</label>
-              <input id="o-phone" value={f.phone} onChange={set('phone')} onBlur={blur('phone')} inputMode="tel" placeholder="9911 2233" autoComplete="tel" aria-invalid={!!show('phone')} />
-              {show('phone') && <span className="fld__err">{errors.phone}</span>}
-            </div>
-
-            <div className="fld">
-              <label htmlFor="o-email">Имэйл <i>(заавал биш)</i></label>
-              <input id="o-email" type="email" value={f.email} onChange={set('email')} onBlur={blur('email')} inputMode="email" placeholder="name@example.com" autoComplete="email" aria-invalid={!!show('email')} />
-              {show('email') && <span className="fld__err">{errors.email}</span>}
-            </div>
-
-            <div className="fld">
-              <label>Дарс сонгох <i>(нэг дарснаас дээд тал нь 3 шил)</i></label>
-              <ul className="items">
-                {WINES.map((w) => {
-                  const n = qty[w.id] || 0
-                  const to = (v) => setQty((q) => ({ ...q, [w.id]: Math.max(0, Math.min(MAX_QTY, v)) }))
-                  return (
-                    <li key={w.id} className={n ? 'on' : ''}>
-                      <span className="items__name"><b>{w.name}</b><small>{w.grape}{w.year ? ` · ${w.year}` : ''} · {w.volume} ml</small></span>
-                      <span className="items__price">{fmtPrice(w.price)}</span>
-                      <span className="qty qty--sm">
-                        <button type="button" onClick={() => to(n - 1)} disabled={n === 0} aria-label={`${w.name}: хасах`}>−</button>
-                        <span aria-live="polite">{n}</span>
-                        <button type="button" onClick={() => to(n + 1)} disabled={n >= MAX_QTY} aria-label={`${w.name}: нэмэх`}>+</button>
-                      </span>
+            {items.length === 0 ? (
+              <div className="cart-empty">
+                <p>Сагс хоосон байна. Дарсаа сонгоод "Сагсанд нэмэх" дарна уу.</p>
+                <button type="button" className="btn-outline" onClick={closeOrder}>Дарс сонгох</button>
+              </div>
+            ) : (
+              <>
+                <ul className="cart">
+                  {items.map(({ w, qty }) => (
+                    <li key={w.id}>
+                      <img className="cart__img" src={w.card} alt="" width="56" height="56" />
+                      <div className="cart__name">
+                        <b>{w.name}</b>
+                        <small>{sub(w)}</small>
+                        <span>{fmtPrice(w.price)}</span>
+                      </div>
+                      <div className="cart__side">
+                        <Stepper qty={qty} onChange={(n) => setQty(w.id, n)} label={w.name} />
+                        <b>{fmtPrice(w.price * qty)}</b>
+                      </div>
                     </li>
-                  )
-                })}
-              </ul>
-              {touched.submit && errors.items && <span className="fld__err">{errors.items}</span>}
-            </div>
+                  ))}
+                </ul>
+                <div className="order__total"><span>Нийт дүн · {bottles} шил</span><b>{fmtPrice(total)}</b></div>
 
-            <div className="fld">
-              <label htmlFor="o-note">Тэмдэглэл <i>(заавал биш)</i></label>
-              <textarea id="o-note" rows="2" value={f.note} onChange={set('note')} placeholder="Бэлэг, тусгай хүсэлт г.м" />
-            </div>
+                <div className="fld">
+                  <label htmlFor="o-name">Нэр</label>
+                  <input id="o-name" ref={firstField} value={f.name} onChange={set('name')} onBlur={blur('name')} placeholder="Таны нэр" autoComplete="name" aria-invalid={!!show('name')} />
+                  {show('name') && <span className="fld__err">{errors.name}</span>}
+                </div>
+                <div className="fld">
+                  <label htmlFor="o-phone">Утас</label>
+                  <input id="o-phone" value={f.phone} onChange={(e) => setF((p) => ({ ...p, phone: fmtPhone(e.target.value) }))} enterKeyHint="send" onBlur={blur('phone')} inputMode="tel" placeholder="9911 2233" autoComplete="tel" aria-invalid={!!show('phone')} />
+                  {show('phone') && <span className="fld__err">{errors.phone}</span>}
+                </div>
+                <details className="order__more" open={!!(f.email || f.note)}>
+                  <summary>Имэйл, тэмдэглэл нэмэх <i>(заавал биш)</i></summary>
+                  <div className="fld">
+                    <label htmlFor="o-email">Имэйл</label>
+                    <input id="o-email" type="email" value={f.email} onChange={set('email')} onBlur={blur('email')} inputMode="email" placeholder="name@example.com" autoComplete="email" aria-invalid={!!show('email')} />
+                    {show('email') && <span className="fld__err">{errors.email}</span>}
+                  </div>
+                  <div className="fld">
+                    <label htmlFor="o-note">Тэмдэглэл</label>
+                    <textarea id="o-note" rows="2" value={f.note} onChange={set('note')} placeholder="Бэлэг, тусгай хүсэлт г.м" />
+                  </div>
+                </details>
 
-            <div className="order__total"><span>Нийт дүн</span><b>{fmtPrice(sum)}</b></div>
-
-            {error && <p className="order__error" role="alert">{error}</p>}
-
-            <button className="btn-primary order__submit" type="submit" disabled={busy}>
-              <span className="btn-primary__shine" />
-              <span className="btn-primary__label">{busy ? 'Илгээж байна…' : `Захиалга илгээх · ${total} шил`}</span>
-            </button>
+                {error && <p className="order__error" role="alert">{error}</p>}
+                <button className="btn-primary order__submit" type="submit" disabled={busy}>
+                  <span className="btn-primary__shine" />
+                  <span className="btn-primary__label">{busy ? 'Илгээж байна…' : 'Захиалга илгээх'}</span>
+                </button>
+              </>
+            )}
           </form>
         )}
       </div>

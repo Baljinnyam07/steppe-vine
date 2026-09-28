@@ -14,6 +14,8 @@
 export const WINES = [
   {
     id: 'frogs-leap-zinfandel',
+    card: '/p/frogs-leap-zinfandel-card.jpg',
+    gallery: ['/p/frogs-leap-zinfandel-1.jpg', '/p/frogs-leap-zinfandel-2.jpg', '/p/frogs-leap-zinfandel-3.jpg'],
     volume: 750, // ml per bottle
     price: 259000, // ₮ per bottle
     tagline: 'Гал дээр шарсан махан зоогтой зохицох шүүслэг амт',
@@ -44,6 +46,8 @@ export const WINES = [
   },
   {
     id: 'heitz-cellar-cabernet',
+    card: '/p/heitz-cellar-cabernet-card.jpg',
+    gallery: ['/p/heitz-cellar-cabernet-1.jpg', '/p/heitz-cellar-cabernet-2.jpg', '/p/heitz-cellar-cabernet-3.jpg'],
     volume: 750, // ml per bottle
     price: 549000, // ₮ per bottle
     tagline: 'Напа хөндийн амьд түүх. Оройн зоогийн оргил үед задлах лонх',
@@ -74,6 +78,8 @@ export const WINES = [
   },
   {
     id: 'dolce-late-harvest',
+    card: '/p/dolce-late-harvest-card.jpg',
+    gallery: ['/p/dolce-late-harvest-1.jpg', '/p/dolce-late-harvest-2.jpg', '/p/dolce-late-harvest-3.jpg'],
     volume: 375, // ml per bottle
     price: 489000, // ₮ per bottle
     tagline: 'Үдшийг хамгийн дурсамжтайгаар өндөрлүүлэх хундага дахь шингэн алт',
@@ -104,6 +110,8 @@ export const WINES = [
   },
   {
     id: 'duckhorn-merlot',
+    card: '/p/duckhorn-merlot-card.jpg',
+    gallery: ['/p/duckhorn-merlot-1.jpg', '/p/duckhorn-merlot-2.jpg', '/p/duckhorn-merlot-3.jpg'],
     volume: 750, // ml per bottle
     price: 289000, // ₮ per bottle
     tagline: 'Ямар ч хоолтой төгс хорших хамгийн баялаг, тэнцвэртэй дарс',
@@ -134,6 +142,8 @@ export const WINES = [
   },
   {
     id: 'stags-leap-karia',
+    card: '/p/stags-leap-karia-card.jpg',
+    gallery: ['/p/stags-leap-karia-1.jpg', '/p/stags-leap-karia-2.jpg', '/p/stags-leap-karia-3.jpg'],
     volume: 750, // ml per bottle
     price: 229000, // ₮ per bottle
     tagline: 'Амтлах мэдрэхүйг сэргээх тансаг, сэргэг сонголт',
@@ -145,7 +155,7 @@ export const WINES = [
     year: null, // the post gives no vintage
     grape: 'Chardonnay',
     origin: 'Napa Valley, California',
-    rating: { score: '91–92', source: 'James Suckling' },
+    rating: { score: '92', source: 'James Suckling' },
     tasting: 'Шинэхэн алим, лийр, нимбэгний хальс, цагаан тоор, хаврын цэцэг болон царс модны зөөлөн аяс.',
     notes: ['Алим', 'Лийр', 'Нимбэгний хальс', 'Цагаан тоор', 'Ваниль'],
     pairing: 'Халуун бууз, жигнэсэн банш, шинэхэн бяслаг, сүүн суурьтай хөнгөн зууш',
@@ -164,6 +174,8 @@ export const WINES = [
   },
   {
     id: 'migration-pinot-noir',
+    card: '/p/migration-pinot-noir-card.jpg',
+    gallery: ['/p/migration-pinot-noir-1.jpg', '/p/migration-pinot-noir-2.jpg', '/p/migration-pinot-noir-3.jpg'],
     volume: 750, // ml per bottle
     price: 199000, // ₮ per bottle
     tagline: 'Махны амтыг тодотгох уян зөөлөн, хөрслөг урлал',

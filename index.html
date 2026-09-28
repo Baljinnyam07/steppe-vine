@@ -5,15 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="description" content="Steppe &amp; Vine: Напа хөндийн (Калифорни) дарс. Heitz Cellar, Duckhorn, Frog's Leap, Stag's Leap, Migration, Dolce. Онлайнаар захиална уу." />
+    <meta name="theme-color" content="#a87d50" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Steppe &amp; Vine — Napa Valley дарс" />
+    <meta property="og:description" content="Напа хөндийн шилдэг дарснууд. Сагсандаа нэмээд шууд захиалаарай." />
+    <meta property="og:image" content="https://steppe-vine.vercel.app/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="https://steppe-vine.vercel.app/" />
+    <meta name="twitter:card" content="summary_large_image" />
     <title>Steppe &amp; Vine — Дарсны танхим</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Cinzel:wght@700&family=Lato:ital,wght@0,400;0,700;1,700&display=swap&subset=cyrillic,latin"
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cinzel:wght@700&display=swap"
       rel="stylesheet"
     />
+    <style>
+      /* small loader shown instantly (before any script runs); src/App.jsx fades it out once the page is ready */
+      #boot { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+        background: radial-gradient(ellipse at 50% 40%, #d9b98c 0%, #b48c5e 70%); transition: opacity 0.5s ease, visibility 0.5s; }
+      #boot.is-out { opacity: 0; visibility: hidden; }
+      #boot svg { width: 34px; height: auto; overflow: visible; animation: boot-bob 2.4s ease-in-out infinite; filter: drop-shadow(0 6px 8px rgba(70, 35, 12, 0.35)); }
+      #boot .wine { animation: boot-fill 2.2s ease-in-out infinite alternate; }
+      #boot p { margin: 0; color: #fff; font: 600 11px/1 Georgia, serif; letter-spacing: 0.34em; padding-left: 0.34em; text-transform: uppercase; text-shadow: 0 1px 6px rgba(70, 35, 12, 0.4); }
+      @keyframes boot-fill { from { transform: translateY(150px); } to { transform: translateY(58px); } }
+      @keyframes boot-bob { 50% { transform: translateY(-3px); } }
+      @media (prefers-reduced-motion: reduce) { #boot svg, #boot .wine { animation: none; } #boot .wine { transform: translateY(90px); } }
+    </style>
   </head>
   <body>
+    <div id="boot" role="status" aria-label="Ачаалж байна">
+      <svg viewBox="0 0 120 300" aria-hidden="true">
+        <defs><clipPath id="bootclip"><path d="M50 8h20v6l-1.5 2v52c0 14 22 24 22 60v140a12 12 0 0 1-12 12H41.5a12 12 0 0 1-12-12V128c0-36 22-46 22-60V16l-1.5-2z" /></clipPath></defs>
+        <g clip-path="url(#bootclip)"><rect class="wine" x="0" y="0" width="120" height="320" fill="#8a1f37" /></g>
+        <path d="M50 8h20v6l-1.5 2v52c0 14 22 24 22 60v140a12 12 0 0 1-12 12H41.5a12 12 0 0 1-12-12V128c0-36 22-46 22-60V16l-1.5-2z" fill="rgba(255,255,255,.14)" stroke="#fff" stroke-width="5" stroke-linejoin="round" />
+        <rect x="49" y="3" width="22" height="14" rx="2.5" fill="#6a1f2c" />
+      </svg>
+      <p>Steppe &amp; Vine</p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

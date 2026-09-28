@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import './styles.css' // global styles first: the shop / admin stylesheets override them
 import App from './App.jsx'
-import './styles.css'
 
 // The admin window lives at /#/admin and is its own chunk: the public site never downloads it.
 const Admin = lazy(() => import('./ui/Admin.jsx'))

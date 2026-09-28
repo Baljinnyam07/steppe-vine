@@ -44,7 +44,7 @@ create policy "anyone can place an order" on public.orders
 -- ---------- visit / click tracking ----------
 create table if not exists public.events (
   id         bigint generated always as identity primary key,
-  type       text not null check (type in ('visit','open_wine','open_order','order_sent')),
+  type       text not null check (type in ('visit','open_wine','open_order','order_sent','add_to_cart')),
   wine_id    text,
   session_id text not null,
   device     text,

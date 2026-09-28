@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { WINES, fmtPrice } from '../data/wines'
+import AdminAnalytics from './AdminAnalytics'
 import './admin.css'
 
 /*
@@ -127,6 +128,7 @@ function Stats({ daily, perWine }) {
         <div><b>{daily[0]?.visitors ?? 0}</b><span>Өнөөдөр орсон</span></div>
         <div><b>{sum(7)}</b><span>Сүүлийн 7 хоног</span></div>
         <div><b>{sum(30)}</b><span>Сүүлийн 30 хоног</span></div>
+        <div><b>{daily.slice(0, 7).reduce((a, d) => a + (d.carts ?? 0), 0)}</b><span>Сагсанд нэмсэн (7 хоног)</span></div>
       </div>
       <h3 className="adm-h">Өдөр бүрийн зочин (14 хоног)</h3>
       <div className="adm-bars">
@@ -140,10 +142,10 @@ function Stats({ daily, perWine }) {
       </div>
       <h3 className="adm-h">Дарс тус бүр</h3>
       <table className="adm-table">
-        <thead><tr><th>Дарс</th><th>Нээсэн</th><th>«Захиалах»</th><th>Захиалга</th></tr></thead>
+        <thead><tr><th>Дарс</th><th>Нээсэн</th><th>Сагсанд</th><th>Сагс нээсэн</th><th>Захиалга</th></tr></thead>
         <tbody>
           {perWine.map((r) => (
-            <tr key={r.wine_id}><td>{WINE_BY_ID[r.wine_id]?.name ?? r.wine_id}</td><td>{r.views}</td><td>{r.order_clicks}</td><td>{r.orders}</td></tr>
+            <tr key={r.wine_id}><td>{WINE_BY_ID[r.wine_id]?.name ?? r.wine_id}</td><td>{r.views}</td><td>{r.adds ?? '—'}</td><td>{r.order_clicks}</td><td>{r.orders}</td></tr>
           ))}
         </tbody>
       </table>
@@ -184,7 +186,7 @@ function Panel({ session }) {
       <p className="adm-user">{session.user.email}</p>
       {state === 'loading' && <p className="adm-empty">Ачаалж байна…</p>}
       {state === 'denied' && <p className="adm-err">Энэ хэрэглэгч админ эрхгүй байна. supabase/migration-admin.sql дотор имэйлээ нэмсэн эсэхээ шалгана уу.</p>}
-      {state === 'ok' && (tab === 'orders' ? <Orders rows={rows} reload={load} /> : <Stats daily={daily} perWine={perWine} />)}
+      {state === 'ok' && (tab === 'orders' ? <Orders rows={rows} reload={load} /> : <AdminAnalytics />)}
     </div>
   )
 }
