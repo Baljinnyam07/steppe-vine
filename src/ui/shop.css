@@ -208,7 +208,7 @@
 }
 
 /* background: a warm sand wall with the soft shadow of vine leaves (like the banner), drifting very slowly */
-.shop__bg { position: fixed; inset: -5%; z-index: 0; pointer-events: none; background: url('/wall.jpg') 30% top / cover no-repeat; animation: bg-drift 70s ease-in-out infinite alternate; will-change: transform; }
+.shop__bg { position: fixed; inset: -5%; z-index: 0; pointer-events: none; background: url('/wall.webp') 30% top / cover no-repeat; animation: bg-drift 70s ease-in-out infinite alternate; will-change: transform; }
 .shop__bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(95, 58, 26, 0.36) 0%, rgba(95, 58, 26, 0.24) 45%, rgba(95, 58, 26, 0.3) 100%); }
 @keyframes bg-drift { from { transform: translate3d(-1.2%, -0.6%, 0) scale(1.03); } to { transform: translate3d(1.2%, 0.8%, 0) scale(1.07); } }
 .shop__hero, .shop__grid, .shop__foot { position: relative; z-index: 1; }
@@ -267,3 +267,10 @@
   .modal { top: var(--vvt, 0px); bottom: auto; height: var(--vvh, 100%); }
   .order--cart { max-height: calc(var(--vvh, 100dvh) - 6px); }
 }
+
+/* cart: goods + delivery lines above the total */
+.order__lines { margin: 8px 0 0; padding-top: 10px; border-top: 1px solid rgba(110, 60, 25, 0.22); display: grid; gap: 4px; }
+.order__lines div { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.order__lines span { opacity: 0.75; }
+.order__lines b { font-weight: 500; }
+.order__lines + .order__total { margin-top: 8px; border-top: 0; padding-top: 0; }

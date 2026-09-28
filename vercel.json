@@ -1,0 +1,6 @@
+{
+  "headers": [
+    { "source": "/p/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/(wall.webp|logo.webp|logo.png|favicon.png|apple-touch-icon.png|og.jpg)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000, stale-while-revalidate=86400" }] }
+  ]
+}

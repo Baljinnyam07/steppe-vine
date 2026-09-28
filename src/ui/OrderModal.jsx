@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
-import { WINES, fmtPrice } from '../data/wines'
+import { WINES, fmtPrice, DELIVERY } from '../data/wines'
 import { useStore } from '../store'
 import { supabase } from '../lib/supabase'
 import { track, reach } from '../lib/track'
@@ -37,7 +37,9 @@ export default function OrderModal() {
   const [done, setDone] = useState(null)
 
   const items = useMemo(() => WINES.filter((w) => cart[w.id] > 0).map((w) => ({ w, qty: cart[w.id] })), [cart])
-  const total = items.reduce((a, i) => a + i.w.price * i.qty, 0)
+  const goods = items.reduce((a, i) => a + i.w.price * i.qty, 0)
+  const delivery = items.length ? DELIVERY : 0
+  const total = goods + delivery
   const bottles = items.reduce((a, i) => a + i.qty, 0)
 
   const errors = {}
@@ -101,7 +103,7 @@ export default function OrderModal() {
     const order = {
       id: makeId(),
       items: items.map(({ w, qty }) => ({ wineId: w.id, wine: w.name, year: w.year, qty, price: w.price })),
-      total,
+      goods, delivery, total,
       name: f.name.trim(), phone: digits(f.phone), email: f.email.trim(), note: f.note.trim(),
       createdAt: new Date().toISOString()
     }
@@ -151,6 +153,7 @@ export default function OrderModal() {
             <p className="order__id">Дугаар: <b>{done.id}</b></p>
             <ul className="order__sum">
               {done.items.map((i) => <li key={i.wineId}><span>{i.wine} {i.year ?? ''}</span><b>{i.qty} × {fmtPrice(i.price)}</b></li>)}
+              {done.delivery > 0 && <li><span>Хүргэлт</span><b>{fmtPrice(done.delivery)}</b></li>}
               <li className="sum-total"><span>Нийт дүн</span><b>{fmtPrice(done.total)}</b></li>
               <li><span>Нэр</span><b>{done.name}</b></li>
               <li><span>Утас</span><b>{done.phone}</b></li>
@@ -180,7 +183,7 @@ export default function OrderModal() {
                 <ul className="cart">
                   {items.map(({ w, qty }) => (
                     <li key={w.id}>
-                      <img className="cart__img" src={w.card} alt="" width="56" height="56" />
+                      <img className="cart__img" src={w.cardSm} alt="" width="56" height="56" />
                       <div className="cart__name">
                         <b>{w.name}</b>
                         <small>{sub(w)}</small>
@@ -193,7 +196,10 @@ export default function OrderModal() {
                     </li>
                   ))}
                 </ul>
-                <div className="order__total"><span>Нийт дүн · {bottles} шил</span><b>{fmtPrice(total)}</b></div>
+                <div className="order__lines">
+                  <div><span>Хүргэлт</span><b>{fmtPrice(delivery)}</b></div>
+                </div>
+                <div className="order__total"><span>Нийт дүн</span><b>{fmtPrice(total)}</b></div>
 
                 <div className="fld">
                   <label htmlFor="o-name">Нэр</label>

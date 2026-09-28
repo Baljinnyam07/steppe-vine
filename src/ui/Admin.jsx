@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { WINES, fmtPrice } from '../data/wines'
+import { WINES, fmtPrice, DELIVERY } from '../data/wines'
 import AdminAnalytics from './AdminAnalytics'
 import './admin.css'
 
@@ -52,6 +52,7 @@ function Orders({ rows, reload }) {
       o.total += price * r.qty
       map.set(r.code, o)
     }
+    for (const o of map.values()) o.total += DELIVERY // every order carries the delivery fee
     return [...map.values()].sort((a, b) => b.created_at.localeCompare(a.created_at))
   }, [rows])
 

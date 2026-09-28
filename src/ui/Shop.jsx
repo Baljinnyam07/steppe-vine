@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { WINES, fmtPrice } from '../data/wines'
+import { WINES, fmtPrice, DELIVERY } from '../data/wines'
 import { useStore } from '../store'
 import Stepper from './Stepper'
 import { track } from '../lib/track'
@@ -33,7 +33,10 @@ function Card({ w, i }) {
   return (
     <article className="wc" style={{ '--i': i }}>
       <button className="wc__img" onClick={() => open(i)} aria-label={`${w.name}: дэлгэрэнгүй`}>
-        <img src={w.card} alt={w.name} decoding="async" fetchpriority={i < 2 ? 'high' : 'auto'} width="720" height="720" />
+        <img
+          src={w.card} srcSet={`${w.cardSm} 400w, ${w.card} 720w`} sizes="(max-width: 820px) 46vw, 340px"
+          alt={w.name} decoding="async" loading={i < 4 ? 'eager' : 'lazy'} fetchpriority={i < 2 ? 'high' : 'auto'} width="720" height="720"
+        />
       </button>
       <div className="wc__body">
         <h3>{w.name}</h3>
@@ -78,7 +81,7 @@ function Detail() {
         <div className="det__inner">
           <div className="det__gallery">
             <div className="det__track" ref={track} onScroll={(e) => { const n = Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth); if (n !== page) { setPage(n); if (n > 0) track('gallery_page', w.id, { page: n + 1 }) } }}>
-              {w.gallery.map((src, k) => <img key={src} src={src} alt={`${w.name} ${k + 1}`} decoding="async" onClick={() => openZoom(src)} />)}
+              {w.gallery.map((src, k) => <img key={src} src={src} alt={`${w.name} ${k + 1}`} decoding="async" loading={k === 0 ? 'eager' : 'lazy'} onClick={() => openZoom(src)} />)}
             </div>
             <div className="det__dots">
               {w.gallery.map((_, k) => <button key={k} className={k === page ? 'on' : ''} onClick={() => go(k)} aria-label={`Зураг ${k + 1}`} />)}
@@ -142,7 +145,7 @@ export default function Shop() {
   const orderOpen = useStore((s) => s.orderOpen)
   const openOrder = useStore((s) => s.openOrder)
   const bottles = Object.values(cart).reduce((a, b) => a + b, 0)
-  const total = WINES.reduce((a, w) => a + (cart[w.id] || 0) * w.price, 0)
+  const total = WINES.reduce((a, w) => a + (cart[w.id] || 0) * w.price, 0) + (Object.keys(cart).length ? DELIVERY : 0)
   const [bump, setBump] = useState(false)
 
   // the cart button pops when something is added
@@ -162,7 +165,7 @@ export default function Shop() {
       </button>
 
       <header className="shop__hero">
-        <img className="shop__logo" src="/logo.png" alt="Steppe & Vine" width="903" height="668" />
+        <img className="shop__logo" src="/logo.webp" alt="Steppe & Vine" width="903" height="668" />
         <p>Authentic wines from <em>Napa Valley, California</em></p>
       </header>
 
