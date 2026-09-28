@@ -227,9 +227,9 @@ function FogBank({ z, height, density, speed, scale, seed }) {
 }
 
 export default function Fog() {
-  // phones: three banks instead of five (each bank is a full noise shader over a big part of the screen)
+  // phones: two banks instead of five (each bank is a full noise shader over a big part of the screen)
   const small = useThree((s) => s.size.width < 820)
-  const banks = small ? BANKS.filter((_, i) => i === 1 || i === 2 || i === 3) : BANKS
+  const banks = small ? BANKS.filter((_, i) => i === 1 || i === 3) : BANKS
   return (
     <>
       {banks.map(([z, height, density, speed, scale, seed]) => (

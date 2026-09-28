@@ -182,7 +182,7 @@ export default function OrderModal() {
                   const to = (v) => setQty((q) => ({ ...q, [w.id]: Math.max(0, Math.min(MAX_QTY, v)) }))
                   return (
                     <li key={w.id} className={n ? 'on' : ''}>
-                      <span className="items__name"><b>{w.name}</b><small>{w.grape}{w.year ? ` · ${w.year}` : ''}</small></span>
+                      <span className="items__name"><b>{w.name}</b><small>{w.grape}{w.year ? ` · ${w.year}` : ''} · {w.volume} ml</small></span>
                       <span className="items__price">{fmtPrice(w.price)}</span>
                       <span className="qty qty--sm">
                         <button type="button" onClick={() => to(n - 1)} disabled={n === 0} aria-label={`${w.name}: хасах`}>−</button>

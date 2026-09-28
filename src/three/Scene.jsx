@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { useStore } from '../store'
 import { anim, playDetail } from './anim'
 import { receiveCaustics, renderCaustics } from './causticShare'
+import { LOW } from './perf'
 import { getWallTexture, getGrainBump } from './textures'
 import Showcase from './Showcase'
 
@@ -95,7 +96,7 @@ export default function Scene() {
   const first = useRef(true)
 
   // coloured light through the glass: drawn from the sun into a small texture that the stones and floor sample
-  useFrame(({ gl, scene, clock }) => renderCaustics(gl, scene, clock.elapsedTime), -1)
+  useFrame(({ gl, scene, clock }) => { if (!LOW) renderCaustics(gl, scene, clock.elapsedTime) }, -1)
 
   // State machine -> GSAP timeline (showcase <-> detail)
   useEffect(() => {
@@ -114,7 +115,7 @@ export default function Scene() {
         intensity={3.8}
         color="#ffe3bf"
         castShadow
-        shadow-mapSize={[1536, 1536]}
+        shadow-mapSize={LOW ? [1024, 1024] : [1536, 1536]}
         shadow-camera-left={-8}
         shadow-camera-right={8}
         shadow-camera-top={8}
@@ -123,8 +124,8 @@ export default function Scene() {
         shadow-camera-far={35}
         shadow-bias={-0.0006}
         shadow-normalBias={0.03}
-        shadow-radius={9}
-        shadow-blurSamples={16}
+        shadow-radius={LOW ? 5 : 9}
+        shadow-blurSamples={LOW ? 6 : 16}
         shadow-intensity={0.86}
       />
       {/* gentle warm spot from above; kept well below the sun so it doesn't wash out the cast shadows */}

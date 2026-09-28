@@ -26,6 +26,7 @@
 .tagline em { font-weight: 700; }
 
 @media (max-width: 820px) {
+  .grain { display: none; } /* a full-screen multiply blend costs a lot on phones and is barely visible there */
   .hero { left: max(16px, env(safe-area-inset-left, 0px)); top: max(calc(env(safe-area-inset-top, 0px) + 12px), 30px); bottom: auto; margin: 0; transform: none; gap: 8px; }
   .tagline { padding-left: 0; font-size: 12px; line-height: 1.3; }
 }

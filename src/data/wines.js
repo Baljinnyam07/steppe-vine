@@ -14,6 +14,7 @@
 export const WINES = [
   {
     id: 'frogs-leap-zinfandel',
+    volume: 750, // ml per bottle
     price: 259000, // ₮ per bottle
     tagline: 'Гал дээр шарсан махан зоогтой зохицох шүүслэг амт',
     kind: 'Улаан дарс',
@@ -43,6 +44,7 @@ export const WINES = [
   },
   {
     id: 'heitz-cellar-cabernet',
+    volume: 750, // ml per bottle
     price: 549000, // ₮ per bottle
     tagline: 'Напа хөндийн амьд түүх. Оройн зоогийн оргил үед задлах лонх',
     model: '/bottle/Wine%20bottle.glb', // real 3D model instead of the procedural bottle
@@ -72,6 +74,7 @@ export const WINES = [
   },
   {
     id: 'dolce-late-harvest',
+    volume: 375, // ml per bottle
     price: 489000, // ₮ per bottle
     tagline: 'Үдшийг хамгийн дурсамжтайгаар өндөрлүүлэх хундага дахь шингэн алт',
     kind: 'Амтат (дессерт) дарс',
@@ -101,6 +104,7 @@ export const WINES = [
   },
   {
     id: 'duckhorn-merlot',
+    volume: 750, // ml per bottle
     price: 289000, // ₮ per bottle
     tagline: 'Ямар ч хоолтой төгс хорших хамгийн баялаг, тэнцвэртэй дарс',
     kind: 'Улаан дарс',
@@ -130,6 +134,7 @@ export const WINES = [
   },
   {
     id: 'stags-leap-karia',
+    volume: 750, // ml per bottle
     price: 229000, // ₮ per bottle
     tagline: 'Амтлах мэдрэхүйг сэргээх тансаг, сэргэг сонголт',
     kind: 'Цагаан дарс',
@@ -159,6 +164,7 @@ export const WINES = [
   },
   {
     id: 'migration-pinot-noir',
+    volume: 750, // ml per bottle
     price: 199000, // ₮ per bottle
     tagline: 'Махны амтыг тодотгох уян зөөлөн, хөрслөг урлал',
     kind: 'Улаан дарс',

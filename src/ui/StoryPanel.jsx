@@ -20,6 +20,7 @@ const Icon = {
   calendar: <path d="M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM4 10h16M8 3v4M16 3v4" />,
   drop: <path d="M12 3s6 6.3 6 10.6a6 6 0 0 1-12 0C6 9.3 12 3 12 3zM9.5 14.5a2.6 2.6 0 0 0 2 2" />,
   leaf: <path d="M5 19c0-8.5 5-14 15-14 0 9.5-5.2 15.2-14 14M5 19c3-4.4 6.4-7.4 10.4-9" />,
+  bottle: <path d="M10 3h4v3.2c0 1.3 3 2 3 6.3V19a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-6.5c0-4.3 3-5 3-6.3V3zM7 14h10M9.6 3h4.8" />,
   pin: <path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10zM12 8.4a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2z" />
 }
 const Svg = ({ n, size }) => (
@@ -160,12 +161,13 @@ export default function StoryPanel() {
             <dl className="facts-grid rv">
               <div><dt><Fi n="calendar" />Ургацын он</dt><dd>{wine.year ?? '—'}</dd></div>
               <div><dt><Fi n="drop" />Ангилал</dt><dd>{wine.kind}</dd></div>
+              <div><dt><Fi n="bottle" />Хэмжээ</dt><dd>{wine.volume} ml</dd></div>
               <div><dt><Fi n="leaf" />Усан үзэм</dt><dd>{wine.grape}</dd></div>
               <div><dt><Fi n="pin" />Гарал</dt><dd>{wine.origin}</dd></div>
             </dl>
 
             <div className="price-block rv">
-              <span className="price-block__label">Нэг лонхны үнэ</span>
+              <span className="price-block__label">Нэг лонхны үнэ · {wine.volume} ml</span>
               <b className="price-block__num">{fmtPrice(wine.price)}</b>
               <em className="price-block__tag">{wine.tagline}</em>
             </div>

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { LOW } from './perf'
 
 /*
  * Coloured light through the glass, landing inside the bottle's shadow (the look of three.js'
@@ -54,6 +55,7 @@ export function renderCaustics(gl, scene, time) {
 
 /** Patch a MeshStandardMaterial shader so it receives the caustic light. */
 export function receiveCaustics(sh) {
+  if (LOW) return // no caustic pass on phones / weak devices: keep the surface shaders plain
   sh.uniforms.uCausticMap = U.map
   sh.uniforms.uCausticMat = U.mat
   sh.uniforms.uCausticStrength = U.strength

@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { makeLabelTexture } from './textures'
+import { LOW } from './perf'
 import { CAUSTIC_LAYER, U as causticU } from './causticShare'
 
 export const BOTTLE_H = 3.0
@@ -65,9 +66,9 @@ function shapeGeometry(name) {
   return (cache[name] = {
     ...s,
     liqR: inner[inner.length - 1][0],
-    body: new THREE.LatheGeometry(smooth(s.pts), 96),
+    body: new THREE.LatheGeometry(smooth(s.pts), LOW ? 48 : 96),
     foil: new THREE.LatheGeometry(foil.map(([x, y]) => new THREE.Vector2(x, y)), 48),
-    liquid: new THREE.LatheGeometry(smooth(liquid, 3), 64)
+    liquid: new THREE.LatheGeometry(smooth(liquid, 3), LOW ? 32 : 64)
   })
 }
 
@@ -268,7 +269,9 @@ function ProceduralBottle({ wine }) {
       </mesh>
       {/* the glass, in two thin layers: a faint tint (green for the dark bottles) ... */}
       <mesh geometry={g.body} renderOrder={1}>
-        <meshPhysicalMaterial color={look.tint} transparent opacity={look.tintOpacity} roughness={0.1} depthWrite={false} />
+        {LOW
+          ? <meshBasicMaterial color={look.tint} transparent opacity={look.tintOpacity} depthWrite={false} />
+          : <meshPhysicalMaterial color={look.tint} transparent opacity={look.tintOpacity} roughness={0.1} depthWrite={false} />}
       </mesh>
       {/* ... and its reflections only (black + additive: sky, sun and window highlights on the surface) */}
       <mesh geometry={g.body} renderOrder={1}>
@@ -277,7 +280,7 @@ function ProceduralBottle({ wine }) {
           color="#000000"
           roughness={0.02}
           metalness={0}
-          clearcoat={1}
+          clearcoat={LOW ? 0 : 1}
           clearcoatRoughness={0.02}
           specularIntensity={1}
           envMapIntensity={0.4}
@@ -286,8 +289,8 @@ function ProceduralBottle({ wine }) {
           depthWrite={false}
         />
       </mesh>
-      <CausticProxy wine={wine} geometry={g.body} />
-      <GlassRim geometry={g.body} strength={clear ? 0.2 : 0.14} />
+      {!LOW && <CausticProxy wine={wine} geometry={g.body} />}
+      {!LOW && <GlassRim geometry={g.body} strength={clear ? 0.2 : 0.14} />}
       <mesh geometry={g.foil} castShadow>
         <meshPhysicalMaterial
           ref={foilMat}
@@ -366,7 +369,7 @@ export default function Bottle({ wine }) {
   return (
     <>
       <GltfBottle url={wine.model} />
-      <CausticProxy wine={wine} geometry={shapeGeometry('bordeaux').body} />
+      {!LOW && <CausticProxy wine={wine} geometry={shapeGeometry('bordeaux').body} />}
     </>
   )
 }

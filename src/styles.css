@@ -200,7 +200,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .pair li:last-child { border-bottom: 0; }
 .pair li::before { content: '\2766'; position: absolute; left: 0; color: var(--burgundy); font-size: 0.9em; }
 
-.facts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 1.6em 0 0.4em; border-top: 1px solid rgba(110, 60, 25, 0.4); border-bottom: 1px solid rgba(110, 60, 25, 0.4); }
+.facts-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin: 1.6em 0 0.4em; border-top: 1px solid rgba(110, 60, 25, 0.4); border-bottom: 1px solid rgba(110, 60, 25, 0.4); }
 .facts-grid div { padding: 12px 10px; text-align: center; border-right: 1px dotted rgba(110, 60, 25, 0.4); }
 .facts-grid div:last-child { border-right: 0; }
 .facts-grid dt { font: 600 0.62em/1.4 var(--display); letter-spacing: 0.16em; text-transform: uppercase; color: #7a4a20; }
@@ -352,8 +352,9 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
   .ico { width: 34px; height: 34px; }
   .two-col { grid-template-columns: 1fr; }
   .facts-grid { grid-template-columns: 1fr 1fr; }
-  .facts-grid div:nth-child(2) { border-right: 0; }
-  .facts-grid div:nth-child(-n+2) { border-bottom: 1px dotted rgba(110, 60, 25, 0.4); }
+  .facts-grid div:nth-child(even) { border-right: 0; }
+  .facts-grid div:nth-child(-n+4) { border-bottom: 1px dotted rgba(110, 60, 25, 0.4); }
+  .facts-grid div:nth-child(5) { grid-column: 1 / -1; border-right: 0; }
   .score-row { flex-direction: column; text-align: center; }
   .score-row blockquote { border-left: 0; padding-left: 0; text-align: center; }
   .score-row figcaption { padding-left: 0; }
