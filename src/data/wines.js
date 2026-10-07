@@ -13,6 +13,91 @@
 //   glass        legacy tint, unused by the current glass material
 export const WINES = [
   {
+    id: 'beringer-founders-cabernet',
+    kind: 'Улаан дарс',
+    card: '/p/beringer-founders-cabernet-card-720.webp',
+    cardSm: '/p/beringer-founders-cabernet-card-400.webp',
+    gallery: ['/p/beringer-founders-cabernet-1.webp'],
+    name: 'Beringer Founders\' Estate',
+    year: null,
+    grape: 'Cabernet Sauvignon',
+    origin: 'California',
+    volume: 750, // ml: confirm
+    price: 155000, // ₮ per bottle
+    tagline: 'Өдөр тутам уухад хамгийн хүртээмжтэй, үнэ цэнтэй дарс',
+    rating: { score: 89, source: 'Wine Enthusiast' },
+    tasting: 'Хар интоор, ваниль болон хөнгөн амтлагчийн (spice) сонгодог амт. Напа хөндийн хамгийн эртний түүхт эдлэнгүүдийн нэгээс гаралтай.',
+    pairing: 'Үхрийн махан стейк, шарсан мах болон хатуу бяслаг'
+  },
+  {
+    id: 'dry-creek-fume-blanc',
+    kind: 'Цагаан дарс',
+    card: '/p/dry-creek-fume-blanc-card-720.webp',
+    cardSm: '/p/dry-creek-fume-blanc-card-400.webp',
+    gallery: ['/p/dry-creek-fume-blanc-1.webp'],
+    name: 'Dry Creek Vineyard',
+    year: null,
+    grape: 'Fumé Blanc / Sauvignon Blanc',
+    origin: 'Sonoma County, California',
+    volume: 750, // ml: confirm
+    price: 155000, // ₮ per bottle
+    tagline: 'Үнээсээ давсан өндөр чанартай, маш сэргэг дарс',
+    rating: { score: 92, source: 'Wine Spectator' },
+    tasting: 'Алим, исгэлэн лийр, лимоны сэргэг амтыг эрдэслэг шинжтэй төгс тэнцвэржүүлсэн. Мөн ургамал болон цитрусын хөнгөн амттай. Сонома мужийн цагаан дарсны анхдагчдын нэг.',
+    pairing: 'Далайн гаралтай хоол (яргай загас, хясаа), ногооны салат, тахианы мах'
+  },
+  {
+    id: 'louis-martini-cabernet',
+    kind: 'Улаан дарс',
+    card: '/p/louis-martini-cabernet-card-720.webp',
+    cardSm: '/p/louis-martini-cabernet-card-400.webp',
+    gallery: ['/p/louis-martini-cabernet-1.webp'],
+    name: 'Louis M. Martini',
+    year: null,
+    grape: 'Sonoma County Cabernet Sauvignon',
+    origin: 'Sonoma County, California',
+    volume: 750, // ml: confirm
+    price: 155000, // ₮ per bottle
+    tagline: 'Үнийн ангиллаасаа хавьгүй илүү өндөр чанарыг мэдрүүлдэг найдвартай сонголт',
+    rating: { score: 92, source: 'Wine Enthusiast' },
+    tasting: 'Сэргэг бөгөөд жимсний амт давамгайлсан, тод мэдрэмжтэй. Бүтцээ маш сайн хадгалдаг.',
+    pairing: 'Гал дээр шарсан хонь, үхрийн мах, өтгөн сүмстэй паста'
+  },
+  {
+    id: 'groth-sauvignon-blanc',
+    kind: 'Цагаан дарс',
+    card: '/p/groth-sauvignon-blanc-card-720.webp',
+    cardSm: '/p/groth-sauvignon-blanc-card-400.webp',
+    gallery: ['/p/groth-sauvignon-blanc-1.webp'],
+    name: 'Groth',
+    year: null,
+    grape: 'Sauvignon Blanc',
+    origin: 'Napa Valley, California',
+    volume: 750, // ml: confirm
+    price: 160000, // ₮ per bottle
+    tagline: 'Усан үзмийн байгалийн шинж чанарыг гаргасан эрч хүчтэй дарс',
+    rating: { score: 93, source: 'Wine Spectator' },
+    tasting: 'Царс модны хүнд амтгүй, маш тод, сэргэг, цитрус болон халуун орны жимсний эрч хүчтэй амттай.',
+    pairing: 'Сүши, хөнгөн зууш, ямааны бяслаг, халуун ногоотой Ази хоол'
+  },
+  {
+    id: 'sonoma-zinfandel',
+    kind: 'Улаан дарс',
+    card: '/p/sonoma-zinfandel-card-720.webp',
+    cardSm: '/p/sonoma-zinfandel-card-400.webp',
+    gallery: ['/p/sonoma-zinfandel-1.webp'],
+    name: 'Sonoma Zinfandel',
+    year: null,
+    grape: 'Zinfandel',
+    origin: 'Sonoma County, California',
+    volume: 750, // ml: confirm
+    price: 155000, // ₮ per bottle
+    tagline: 'Үнийн хувьд хямд ч өндөр зэрэглэлийн амт гаргадаг бат бөх дарс',
+    rating: { score: 92, source: 'Wine Enthusiast' },
+    tasting: 'Маш шүүслэг, баялаг, өтгөн (jammy) улаан жимсгэнэ болон хөнгөн халуун ногооны холимог амттай. Сонома бүсийн унаган өв.',
+    pairing: 'Барбекю (BBQ), пицца, гахайн шарсан хавирга, улаан лоолийн сүмстэй хоол'
+  },
+  {
     id: 'frogs-leap-zinfandel',
     card: '/p/frogs-leap-zinfandel-card-720.webp',
     cardSm: '/p/frogs-leap-zinfandel-card-400.webp',

@@ -13,6 +13,7 @@ import './shop.css'
 const FACEBOOK = 'https://www.facebook.com/profile.php?id=61594372082930'
 const INSTAGRAM = 'https://www.instagram.com/steppenvine/'
 const sub = (w) => `${w.grape}${w.year ? ` · ${w.year}` : ''} · ${w.volume} ml`
+const SOON = 'Үнэ удахгүй' // a wine without a price yet can be looked at but not ordered
 
 const Plus = () => (
   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
@@ -22,6 +23,7 @@ const Plus = () => (
 function AddToCart({ w, className = '' }) {
   const qty = useStore((s) => s.cart[w.id] || 0)
   const setQty = useStore((s) => s.setQty)
+  if (!w.price) return <span className={`soon ${className}`}>{SOON}</span>
   if (qty === 0) {
     return <button className={`add ${className}`} onClick={() => setQty(w.id, 1)}><Plus />Сагсанд нэмэх</button>
   }
@@ -34,15 +36,18 @@ function Card({ w, i }) {
     <article className="wc" style={{ '--i': i }}>
       <button className="wc__img" onClick={() => open(i)} aria-label={`${w.name}: дэлгэрэнгүй`}>
         <img
-          src={w.card} srcSet={`${w.cardSm} 400w, ${w.card} 720w`} sizes="(max-width: 820px) 46vw, 340px"
-          alt={w.name} decoding="async" loading={i < 4 ? 'eager' : 'lazy'} fetchpriority={i < 2 ? 'high' : 'auto'} width="720" height="720"
+          src={w.card} srcSet={`${w.cardSm} 480w, ${w.card} 800w`} sizes="(max-width: 820px) 46vw, 340px"
+          alt={w.name} decoding="async" loading={i < 4 ? 'eager' : 'lazy'} fetchpriority={i < 2 ? 'high' : 'auto'} width="800" height="800"
         />
+        <span className="wc__hint" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+        </span>
       </button>
       <div className="wc__body">
         <h3>{w.name}</h3>
         <p>{sub(w)}</p>
         <div className="wc__row">
-          <b>{fmtPrice(w.price)}</b>
+          <b>{w.price ? fmtPrice(w.price) : ''}</b>
           <AddToCart w={w} />
         </div>
       </div>
@@ -62,13 +67,23 @@ function Detail() {
     if (!open) return
     setPage(0)
     if (track.current) track.current.scrollLeft = 0
-    const key = (e) => { if (e.key === 'Escape' && !useStore.getState().orderOpen && !useStore.getState().zoom) closeDetail() }
+    const key = (e) => {
+      const st = useStore.getState()
+      if (st.orderOpen || st.zoom) return
+      if (e.key === 'Escape') closeDetail()
+      const el = track.current
+      if (!el) return
+      const n = Math.round(el.scrollLeft / el.clientWidth)
+      if (e.key === 'ArrowRight') el.scrollTo({ left: (n + 1) * el.clientWidth, behavior: 'smooth' })
+      if (e.key === 'ArrowLeft') el.scrollTo({ left: (n - 1) * el.clientWidth, behavior: 'smooth' })
+    }
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
   }, [open, index, closeDetail])
 
   if (!open) return null
   const go = (n) => track.current?.scrollTo({ left: n * track.current.clientWidth, behavior: 'smooth' })
+  const last = w.gallery.length - 1
 
   return (
     <div className="det" role="dialog" aria-modal="true" aria-label={w.name}>
@@ -81,9 +96,11 @@ function Detail() {
         <div className="det__inner">
           <div className="det__gallery">
             <div className="det__track" ref={track} onScroll={(e) => { const n = Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth); if (n !== page) { setPage(n); if (n > 0) track('gallery_page', w.id, { page: n + 1 }) } }}>
-              {w.gallery.map((src, k) => <img key={src} src={src} alt={`${w.name} ${k + 1}`} decoding="async" loading={k === 0 ? 'eager' : 'lazy'} onClick={() => openZoom(src)} />)}
+              {w.gallery.map((src, k) => <img key={src} src={src} style={{ aspectRatio: w.ratio || 1 }} alt={`${w.name} ${k + 1}`} decoding="async" loading={k === 0 ? 'eager' : 'lazy'} onClick={() => openZoom(src)} />)}
             </div>
-            <div className="det__dots">
+            {page > 0 && <button className="det__arrow det__arrow--l" onClick={() => go(page - 1)} aria-label="Өмнөх зураг"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>}
+            {page < last && <button className="det__arrow det__arrow--r" onClick={() => go(page + 1)} aria-label="Дараагийн зураг"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></button>}
+            <div className="det__dots" hidden={w.gallery.length < 2}>
               {w.gallery.map((_, k) => <button key={k} className={k === page ? 'on' : ''} onClick={() => go(k)} aria-label={`Зураг ${k + 1}`} />)}
             </div>
           </div>
@@ -104,9 +121,9 @@ function Detail() {
       </div>
 
       <div className="det__bar">
-        <div className="det__price"><small>1 лонх · {w.volume} ml</small><b>{fmtPrice(w.price)}</b></div>
+        <div className="det__price"><small>1 лонх · {w.volume} ml</small><b>{w.price ? fmtPrice(w.price) : SOON}</b></div>
         <div className="det__act">
-          <AddToCart w={w} className="add--big" />
+          {w.price ? <AddToCart w={w} className="add--big" /> : null}
           {inCart && <button className="det__go" onClick={openOrder}>Сагс</button>}
         </div>
       </div>
@@ -114,21 +131,40 @@ function Detail() {
   )
 }
 
-/** A poster full screen: scroll / pinch to read the small print, tap or Esc / Back to close. */
+/** The poster viewer: the whole poster fitted to the screen, ‹ › (buttons, keys, swipe) to move between the wine's posters. */
 function Zoom() {
   const src = useStore((s) => s.zoom)
-  const closeZoom = useStore((s) => s.closeZoom)
+  const index = useStore((s) => s.index)
+  const { closeZoom, setZoom } = useStore.getState()
+  const touch = useRef(null)
+  const list = WINES[index].gallery
+  const pos = list.indexOf(src)
+  const move = (d) => { const n = pos + d; if (n >= 0 && n < list.length) setZoom(list[n]) }
+
   useEffect(() => {
     if (!src) return
-    const key = (e) => e.key === 'Escape' && closeZoom()
+    const key = (e) => {
+      if (e.key === 'Escape') closeZoom()
+      if (e.key === 'ArrowRight') move(1)
+      if (e.key === 'ArrowLeft') move(-1)
+    }
     window.addEventListener('keydown', key)
     return () => window.removeEventListener('keydown', key)
-  }, [src, closeZoom])
+  }, [src, pos])  // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!src) return null
   return (
-    <div className="zoom" onClick={closeZoom} role="dialog" aria-modal="true" aria-label="Постер">
-      <button className="zoom__x" aria-label="Хаах">×</button>
-      <img src={src} alt="" />
+    <div
+      className="zoom" role="dialog" aria-modal="true" aria-label="Постер"
+      onClick={(e) => { if (e.target === e.currentTarget) closeZoom() }}
+      onTouchStart={(e) => { touch.current = e.touches.length === 1 ? e.touches[0].clientX : null }}
+      onTouchEnd={(e) => { if (touch.current == null) return; const dx = e.changedTouches[0].clientX - touch.current; touch.current = null; if (Math.abs(dx) > 60) move(dx < 0 ? 1 : -1) }}
+    >
+      <button className="zoom__x" onClick={closeZoom} aria-label="Хаах">×</button>
+      <img key={src} src={src} alt="" draggable="false" />
+      {pos > 0 && <button className="zoom__arrow zoom__arrow--l" onClick={() => move(-1)} aria-label="Өмнөх"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>}
+      {pos < list.length - 1 && <button className="zoom__arrow zoom__arrow--r" onClick={() => move(1)} aria-label="Дараагийн"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></button>}
+      {list.length > 1 && <div className="zoom__count">{pos + 1} / {list.length}</div>}
     </div>
   )
 }

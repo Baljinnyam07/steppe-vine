@@ -1,11 +1,11 @@
 -- Admin window (/#/admin). Run once in Supabase -> SQL Editor.
 --
--- BEFORE running: replace YOUR-ADMIN-EMAIL@example.com below with the email you will sign in with, and
+-- BEFORE running: replace baljinnyam.ja@gmail.com below with the email you will sign in with, and
 -- create that user in Supabase -> Authentication -> Users -> "Add user" (email + password, tick "Auto Confirm").
 -- Then Authentication -> Sign In / Providers -> turn OFF "Allow new users to sign up".
 
 create table if not exists public.admins (email text primary key);
-insert into public.admins (email) values ('YOUR-ADMIN-EMAIL@example.com') on conflict do nothing;
+insert into public.admins (email) values ('baljinnyam.ja@gmail.com') on conflict do nothing;
 alter table public.admins enable row level security;   -- no policies: nobody can read the list through the API
 
 create or replace function public.is_admin() returns boolean

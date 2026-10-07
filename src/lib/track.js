@@ -73,7 +73,9 @@ export function track(type, wineId = null, meta = null) {
     referrer: type === 'visit' ? document.referrer.slice(0, 200) || null : null,
     meta: meta || null
   })
-  if (!timer) timer = setTimeout(flush, 4000)
+  // a visit is sent right away (a visitor who leaves within seconds must still be counted); the rest is batched
+  if (type === 'visit') flush()
+  else if (!timer) timer = setTimeout(flush, 3000)
 }
 
 // --- the journey of one visit ----------------------------------------------------------------------------

@@ -44,6 +44,7 @@ export const useStore = create((set, get) => ({
     set({ zoom: src })
   },
   closeZoom: () => back('zoom', () => set({ zoom: null })),
+  setZoom: (src) => set({ zoom: src }), // next / previous poster inside the open viewer (no new history entry)
 
   setQty: (id, n) => set((s) => {
     const cart = { ...s.cart }

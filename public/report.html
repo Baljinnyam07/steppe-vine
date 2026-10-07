@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="mn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Steppe & Vine — Тайлан</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2a1a10;--mut:#8a6a4a;--bur:#6a1f2c;--bg:#f6efe4;--card:#fffaf1;--line:rgba(110,60,25,.2)}
+*{box-sizing:border-box;margin:0}body{background:var(--bg);color:var(--ink);font:400 15px/1.6 'Montserrat',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,.c b,.login h1{font-family:'Lora',Georgia,serif;letter-spacing:.01em}.c b,td,th,svg text{font-variant-numeric:tabular-nums}
+.wrap{max-width:1040px;margin:0 auto;padding:22px 18px 70px}
+h1{font-size:28px;font-weight:600;color:#3f0f19}h2{font-size:19px;font-weight:600;margin:32px 0 12px;color:#3f0f19}
+.sub{color:var(--mut);font-size:13px;letter-spacing:.02em}.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+button,input{font:inherit}button{font-size:13px;font-weight:500;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:#e9dcc6;cursor:pointer}
+button.on{background:var(--bur);color:#fff}input{padding:10px 12px;border:1px solid var(--line);border-radius:10px;width:100%}
+.login{max-width:340px;margin:12vh auto;display:grid;gap:10px;background:var(--card);padding:26px;border-radius:16px;border:1px solid var(--line)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}.c b{display:block;font-size:26px;font-weight:600;color:#3f0f19}.c span{font-size:12px;color:var(--mut);letter-spacing:.02em}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}th,td{padding:7px 9px;text-align:center;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase}td:first-child,th:first-child{text-align:left;white-space:nowrap}
+.hm{border-radius:6px}svg text{font-family:'Montserrat',sans-serif}.note{font-size:12.5px;color:var(--mut);margin-top:8px}.demo{background:#fff3cd;border:1px solid #e6cf7a;padding:8px 12px;border-radius:10px;margin:10px 0;font-size:13.5px}
+.err{color:#a3212f}.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;margin-top:8px}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+@media print{.bar,.noprint{display:none}body{background:#fff}}
+</style></head><body><div class="wrap" id="app"></div>
+<script type="module">
+const URL_='https://eoqoxqnbziaxfalnofrc.supabase.co',KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvcW94cW5iemlheGZhbG5vZnJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyOTY3OTcsImV4cCI6MjEwNTg3Mjc5N30.XwTX2vR_6Ye3JiKjyGtdar2XX3rgf0x_HwhU0p-tD0M';
+const WINES=[["beringer-founders-cabernet", "Beringer Founders' Estate"], ["dry-creek-fume-blanc", "Dry Creek Vineyard"], ["louis-martini-cabernet", "Louis M. Martini"], ["groth-sauvignon-blanc", "Groth"], ["sonoma-zinfandel", "Sonoma Zinfandel"], ["frogs-leap-zinfandel", "Frog's Leap"], ["heitz-cellar-cabernet", "Heitz Cellar"], ["dolce-late-harvest", "Dolce"], ["duckhorn-merlot", "Duckhorn"], ["stags-leap-karia", "Stag's Leap KARIA"], ["migration-pinot-noir", "Migration"]],PRICE={"beringer-founders-cabernet": 155000, "dry-creek-fume-blanc": 155000, "louis-martini-cabernet": 155000, "groth-sauvignon-blanc": 160000, "sonoma-zinfandel": 155000, "frogs-leap-zinfandel": 259000, "heitz-cellar-cabernet": 549000, "dolce-late-harvest": 489000, "duckhorn-merlot": 289000, "stags-leap-karia": 229000, "migration-pinot-noir": 199000};
+const COLORS=['#a52843','#c79a3a','#4f7a52','#3b6d9b','#8a5a9b','#d0743c','#7a3d2a','#2f8f8f','#b25a8a','#6b7d2e','#4a5d9b'];
+const demo=new URLSearchParams(location.search).has('demo');
+const app=document.getElementById('app');
+const fmt=n=>n.toLocaleString('en-US');
+const ub=d=>new Date(new Date(d).getTime()+8*36e5).toISOString().slice(0,10);
+let sb=null,days=14;
+function login(msg=''){app.innerHTML=`<form class="login" id="f"><h1>Steppe &amp; Vine</h1><div class="sub">Тайлан · админ нэвтрэлт</div>
+<input id="e" type="email" placeholder="Имэйл" autocomplete="username" required><input id="p" type="password" placeholder="Нууц үг" autocomplete="current-password" required>
+<button class="on">Нэвтрэх</button><div class="err">${msg}</div><div class="sub">Жишээ харахыг хүсвэл хаягийн төгсгөлд <b>?demo</b> нэмнэ.</div></form>`;
+ document.getElementById('f').onsubmit=async e=>{e.preventDefault();const {error}=await sb.auth.signInWithPassword({email:e.target.e.value.trim(),password:e.target.p.value});error?login('Имэйл эсвэл нууц үг буруу'):run()}}
+async function load(){
+ if(demo)return fake();
+ const since=new Date(Date.now()-days*864e5).toISOString(),out=[];
+ for(let f=0;f<60000;f+=1000){const {data,error}=await sb.from('events').select('type,wine_id,session_id,device,source,meta,created_at').gte('created_at',since).order('created_at').range(f,f+999);
+  if(error)throw error;out.push(...data);if(data.length<1000)break}
+ return out}
+function fake(){let s=7;const r=()=>(s=s*16807%2147483647)/2147483647,out=[];
+ for(let d=days-1;d>=0;d--)for(let i=0;i<8+Math.floor(r()*30);i++){const t=new Date(Date.now()-d*864e5-r()*864e5).toISOString(),sid=`d${d}-${i}`;
+  const dev=['mobile','mobile','mobile','desktop','tablet'][Math.floor(r()*5)],src=['facebook','facebook','instagram','direct','google'][Math.floor(r()*5)];out.push({type:'visit',session_id:sid,device:dev,source:src,created_at:t});
+  WINES.forEach(([id],k)=>{if(r()<[.7,.6,.3,.45,.35,.4][k]){out.push({type:'open_wine',wine_id:id,session_id:sid,created_at:t});
+   if(r()<.3){out.push({type:'add_to_cart',wine_id:id,session_id:sid,created_at:t});if(r()<.5){out.push({type:'open_order',session_id:sid,meta:{},created_at:t});out.push({type:'form_start',session_id:sid,created_at:t})}}if(r()<.08)out.push({type:'order_sent',wine_id:id,session_id:sid,meta:{qty:1},created_at:t})}})}
+ return out}
+const uniq=a=>new Set(a).size;
+function render(ev){
+ const dayList=[];for(let i=days-1;i>=0;i--)dayList.push(ub(Date.now()-i*864e5));
+ const vis={},view={},cart={},ord={};
+ for(const e of ev){const d=ub(e.created_at);
+  if(e.type==='visit')(vis[d]??=new Set()).add(e.session_id);
+  if(e.type==='open_wine')((view[e.wine_id]??={})[d]??=new Set()).add(e.session_id);
+  if(e.type==='add_to_cart')((cart[e.wine_id]??={})[d]??=new Set()).add(e.session_id);
+  if(e.type==='order_sent')((ord[e.wine_id]??={})[d]??=[]).push(e)}
+ const V=d=>vis[d]?.size||0,tot=a=>a.reduce((x,y)=>x+y,0);
+ const per=id=>({viewers:uniq(dayList.flatMap(d=>[...(view[id]?.[d]||[])])),views:tot(dayList.map(d=>view[id]?.[d]?.size||0)),carts:uniq(dayList.flatMap(d=>[...(cart[id]?.[d]||[])])),
+  orders:tot(dayList.map(d=>(ord[id]?.[d]||[]).length)),bottles:tot(dayList.flatMap(d=>(ord[id]?.[d]||[]).map(e=>e.meta?.qty||1)))});
+ const P=Object.fromEntries(WINES.map(([id])=>[id,per(id)]));
+ const sessions=uniq(ev.filter(e=>e.type==='visit').map(e=>e.session_id)),orders=uniq(ev.filter(e=>e.type==='order_sent').map(e=>e.meta?.code||e.session_id));
+ const rev=WINES.reduce((a,[id])=>a+P[id].bottles*PRICE[id],0);
+ const S=t=>uniq(ev.filter(e=>e.type===t).map(e=>e.session_id));
+ const funnel=[['Сайтад орсон',sessions],['Дарс үзсэн',S('open_wine')],['Сагсанд нэмсэн',S('add_to_cart')],['Сагс нээсэн',S('open_order')],['Форм бөглөж эхэлсэн',S('form_start')],['Захиалга өгсөн',S('order_sent')]];
+ const cnt=(f)=>{const m={};ev.filter(e=>e.type==='visit').forEach(e=>{const k=f(e);m[k]=(m[k]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
+ const srcs=cnt(e=>e.source||'direct'),devs=cnt(e=>e.device||'?');
+ const hours=Array(24).fill(0);ev.filter(e=>e.type==='visit').forEach(e=>hours[new Date(new Date(e.created_at).getTime()+8*36e5).getUTCHours()]++);
+ const hmx=Math.max(1,...hours);
+ const hbars=hours.map((v,h)=>`<g><rect x="${h*37+6}" y="${130-v/hmx*110}" width="28" height="${v/hmx*110}" rx="4" fill="#c79a3a"/><text x="${h*37+20}" y="${124-v/hmx*110}" font-size="10" text-anchor="middle" fill="#3f0f19">${v||''}</text><text x="${h*37+20}" y="146" font-size="10" text-anchor="middle" fill="#8a6a4a">${h}</text></g>`).join('');
+ const list=(rows,label)=>rows.length?rows.map(([k,v])=>`<div style="display:grid;grid-template-columns:110px 1fr auto;gap:10px;align-items:center;margin:6px 0"><span>${label[k]||k}</span><span style="height:10px;border-radius:6px;background:#ecdfc8;overflow:hidden"><i style="display:block;height:100%;width:${v/rows[0][1]*100}%;background:linear-gradient(90deg,#c79a3a,#a52843)"></i></span><b>${v} · ${Math.round(v/sessions*100)}%</b></div>`).join(''):'<div class="sub">Өгөгдөл алга</div>';
+ const fn=funnel.map(([l,n],i)=>`<div style="margin:8px 0"><div style="display:flex;justify-content:space-between"><span>${l}</span><b>${n}</b></div><div style="height:10px;border-radius:6px;background:#ecdfc8;overflow:hidden;margin:4px 0"><i style="display:block;height:100%;width:${Math.max(2,funnel[0][1]?n/funnel[0][1]*100:0)}%;background:linear-gradient(90deg,#a52843,#6a1f2c)"></i></div><div class="sub">${funnel[0][1]?Math.round(n/funnel[0][1]*100):0}% нийтээс${i&&funnel[i-1][1]?` · өмнөх алхмаас ${Math.round(n/funnel[i-1][1]*100)}%`:''}</div></div>`).join('');
+ const mx=Math.max(1,...dayList.map(V)),bw=Math.max(8,Math.floor(900/dayList.length)-6);
+ const bars=dayList.map((d,i)=>{const h=V(d)/mx*150,x=i*(bw+6)+10;return `<g><rect x="${x}" y="${170-h}" width="${bw}" height="${h}" rx="4" fill="#a52843"/><text x="${x+bw/2}" y="${164-h}" font-size="11" text-anchor="middle" fill="#3f0f19">${V(d)||''}</text><text x="${x+bw/2}" y="188" font-size="10" text-anchor="middle" fill="#8a6a4a">${dayList.length>31&&i%3?'':d.slice(5)}</text></g>`}).join('');
+ const pm=Math.max(1,...WINES.map(([id])=>P[id].viewers));
+ const hb=[...WINES].sort((a,b)=>P[b[0]].viewers-P[a[0]].viewers).map(([id,n],i)=>`<g transform="translate(0,${i*34})"><text x="0" y="17" font-size="13" fill="#2a1a10">${n}</text><rect x="170" y="4" width="${P[id].viewers/pm*430}" height="18" rx="5" fill="${COLORS[WINES.findIndex(w=>w[0]===id)]}"/><text x="${176+P[id].viewers/pm*430}" y="18" font-size="12" fill="#3f0f19">${P[id].viewers}</text></g>`).join('');
+ const hm=Math.max(1,...WINES.flatMap(([id])=>dayList.map(d=>view[id]?.[d]?.size||0)));
+ const cell=v=>`<td><span class="hm" style="display:block;padding:5px 0;background:rgba(165,40,67,${v?(.12+.78*v/hm).toFixed(2):0});color:${v/hm>.55?'#fff':'#2a1a10'}">${v||'·'}</span></td>`;
+ const head=`<tr><th>Өдөр</th><th>Зочин</th>${WINES.map(w=>`<th>${w[1]}</th>`).join('')}</tr>`;
+ const body=[...dayList].reverse().map(d=>`<tr><td>${d}</td><td><b>${V(d)}</b></td>${WINES.map(([id])=>cell(view[id]?.[d]?.size||0)).join('')}</tr>`).join('');
+ const lw=900,lh=170,lx=i=>10+i*(lw-20)/Math.max(1,dayList.length-1),ly=v=>lh-(v/hm)*(lh-14);
+ const lines=WINES.map(([id],k)=>`<polyline fill="none" stroke="${COLORS[k]}" stroke-width="2.4" stroke-linejoin="round" points="${dayList.map((d,i)=>lx(i)+','+ly(view[id]?.[d]?.size||0)).join(' ')}"/>`).join('');
+ const xl=dayList.map((d,i)=>i%Math.ceil(dayList.length/10)===0?`<text x="${lx(i)}" y="${lh+16}" font-size="10" text-anchor="middle" fill="#8a6a4a">${d.slice(5)}</text>`:'').join('');
+ const ptab=[...WINES].sort((a,b)=>P[b[0]].viewers-P[a[0]].viewers).map(([id,n])=>{const p=P[id];return `<tr><td>${n}</td><td>${p.viewers}</td><td>${p.views}</td><td>${p.carts}</td><td>${p.orders}</td><td>${p.bottles}</td><td>${fmt(p.bottles*PRICE[id])} ₮</td><td>${p.viewers?Math.round(p.carts/p.viewers*100):0}%</td></tr>`}).join('');
+ app.innerHTML=`<h1>Steppe &amp; Vine — Тайлан</h1><div class="sub">${dayList[0]} — ${dayList[dayList.length-1]} · Улаанбаатарын цагаар · зочин бүр өдөрт нэг удаа тоологдоно</div>
+ ${demo?'<div class="demo">⚠ Энэ бол <b>жишээ (зохиомол) өгөгдөл</b>, жинхэнэ тоо биш.</div>':''}
+ <div class="bar noprint">${[7,14,30,90].map(d=>`<button class="${d===days?'on':''}" data-d="${d}">${d} хоног</button>`).join('')}<button id="pr">Хэвлэх / PDF</button></div>
+ <div class="cards"><div class="c"><b>${sessions}</b><span>Нийт зочин</span></div><div class="c"><b>${Math.round(sessions/days*10)/10}</b><span>Өдөрт дунджаар</span></div>
+ <div class="c"><b>${uniq(ev.filter(e=>e.type==='open_wine').map(e=>e.session_id))}</b><span>Дарс үзсэн хүн</span></div><div class="c"><b>${uniq(ev.filter(e=>e.type==='add_to_cart').map(e=>e.session_id))}</b><span>Сагсанд нэмсэн хүн</span></div>
+ <div class="c"><b>${orders}</b><span>Захиалга</span></div><div class="c"><b>${fmt(rev)} ₮</b><span>Барааны дүн</span></div></div>
+ <h2>Хүн хаана хүрээд зогсож байна (funnel)</h2><div class="box">${fn}</div>
+ <h2>Өдөр бүр хэдэн хүн орсон бэ</h2><div class="box"><svg viewBox="0 0 ${Math.max(920,dayList.length*(bw+6)+20)} 196" width="100%">${bars}</svg></div>
+ <h2>Дарс тус бүрийг хэдэн хүн үзсэн бэ (нийт)</h2><div class="box"><svg viewBox="0 0 640 ${WINES.length*34}" width="100%">${hb}</svg></div>
+ <h2>Өдөр бүр, дарс тус бүрийг хэдэн хүн үзсэн бэ</h2><div class="box"><table><thead>${head}</thead><tbody>${body}</tbody></table></div><div class="note">Тоо = тухайн өдөр тухайн дарсыг нээж үзсэн давхардаагүй хүн. Улаан өнгө хэдий хүчтэй тэдий олон.</div>
+ <h2>Дарс бүрийн өдөр тутмын хандлага</h2><div class="box"><svg viewBox="0 0 ${lw} ${lh+24}" width="100%">${lines}${xl}</svg><div class="legend">${WINES.map((w,k)=>`<span><i style="background:${COLORS[k]}"></i>${w[1]}</span>`).join('')}</div></div>
+ <h2>Хаанаас ирсэн, ямар төхөөрөмжөөр</h2><div class="box" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px"><div><div class="sub" style="margin-bottom:6px">Эх сурвалж</div>${list(srcs,{facebook:'Facebook',instagram:'Instagram',google:'Google',direct:'Шууд'})}</div><div><div class="sub" style="margin-bottom:6px">Төхөөрөмж</div>${list(devs,{mobile:'Утас',tablet:'Таблет',desktop:'Компьютер'})}</div></div>
+ <h2>Цагаар хэдэн хүн орсон (Улаанбаатар)</h2><div class="box"><svg viewBox="0 0 900 152" width="100%">${hbars}</svg></div>
+ <h2>Дарс бүрийн үр дүн</h2><div class="box"><table><thead><tr><th>Дарс</th><th>Үзсэн хүн</th><th>Нийт нээлт</th><th>Сагсанд нэмсэн</th><th>Захиалга</th><th>Шил</th><th>Дүн</th><th>Үзсэн→сагс</th></tr></thead><tbody>${ptab}</tbody></table></div>
+ <div class="note">Нийт ${ev.length} бүртгэл. Хүн бүр нэргүй, санамсаргүй дугаараар тоологдоно. Хүргэлтийн төлбөр орсонгүй.</div>`;
+ app.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{days=+b.dataset.d;run()});document.getElementById('pr').onclick=()=>print()}
+async function run(){app.innerHTML='<div class="sub" style="padding:40px">Ачаалж байна…</div>';try{render(await load())}catch(e){app.innerHTML=`<div class="err" style="padding:30px">Уншиж чадсангүй: ${e.message||e}<br>Админ эрхтэй хэрэглэгчээр нэвтэрсэн эсэхээ шалгана уу.</div>`}}
+if(demo)run();else{const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');sb=createClient(URL_,KEY,{auth:{persistSession:true}});
+ const {data}=await sb.auth.getSession();data.session?run():login()}
+</script></body></html>
